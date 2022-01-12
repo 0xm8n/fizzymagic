@@ -3,7 +3,7 @@
 // Fizzy Magic
 // OpenZeppelin
 
-pragma solidity >=0.8.6;
+pragma solidity 0.8.11;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 

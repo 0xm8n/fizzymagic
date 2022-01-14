@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
-
 // Fizzy Magic
-// OpenZeppelin
 
 pragma solidity 0.8.11;
 

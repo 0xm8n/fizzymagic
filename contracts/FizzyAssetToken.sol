@@ -14,7 +14,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 /// @title Fizzy Stable
 /// @dev This contract allows contract calls to any contract (except BentoBox)
 /// from arbitrary callers thus, don't trust calls from this contract in any circumstances.
-contract FizzyStable is Context, AccessControl, ERC20Burnable, ERC20Pausable {
+contract FizzyAssetToken is Context, ERC20Burnable, ERC20Pausable, AccessControl {
 
     bytes32 public constant EXECUTER_ROLE = keccak256("EXECUTER_ROLE");
 

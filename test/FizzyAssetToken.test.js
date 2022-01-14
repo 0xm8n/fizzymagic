@@ -1,9 +1,12 @@
 const {expect} = require("chai");
 const {ethers} = require("hardhat");
+const BN = require('bn.js');
 
 describe("FizzyAssetToken", async () => {
     let testContract;
-    let initSupply = "1000000000000000000000000000";
+    let snapshotId;
+    let baseNumber = new BN(10,10).pow(new BN(26,10));
+    let initSupply = (new BN(10,10).mul(baseNumber)).toString(10);
 
     const [owner,execAddr,toAddr,invidAddr] = await ethers.getSigners();
     console.log("owner: ",owner.address);
@@ -47,7 +50,9 @@ describe("FizzyAssetToken", async () => {
 
     it("Should return its name", async () => {
         console.log(" ");
-        expect(await testContract.name()).to.equal("Yield CAKE Token");
+        const contractName = await testContract.name();
+        console.log("contract name: ",contractName);
+        expect(contractName).to.equal("Yield CAKE Token");
     });
 
     it("Should mint failed from invalid address", async () => {

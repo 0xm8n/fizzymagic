@@ -16,8 +16,8 @@
     "bsc:verify": "hardhat --network bsc etherscan-verify --solc-input --license GPL-3.0 --force-license",
     "bsc_testnet:deploy": "hardhat --network bsc_testnet deploy",
     "bsc_testnet:verify": "hardhat --network bsc_testnet etherscan-verify --solc-input --license GPL-3.0 --force-license",
-    "test": "hardhat test",
-    "test:cov": "hardhat coverage --testfiles"
+    "test:local": "hardhat test",
+    "test": "hardhat coverage --testfiles"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.1"

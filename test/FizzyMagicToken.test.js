@@ -56,7 +56,9 @@ describe("FizzyMagicToken", async () => {
 
     it("Should return its name", async () => {
         console.log(" ");
-        expect(await testContract.name()).to.equal("Fizzy Magic Token");
+        const contractName = await testContract.name();
+        console.log("contract name: ",contractName);
+        expect(contractName).to.equal("Fizzy Magic Token");
 
     });
 

@@ -1,6 +1,7 @@
-pragma solidity >=0.5.0;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.11;
 
-interface IUniswapV2Pair {
+interface IFizzyPair {
     // event Approval(address indexed owner, address indexed spender, uint value);
     // event Transfer(address indexed from, address indexed to, uint value);
 

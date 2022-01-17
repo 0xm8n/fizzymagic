@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.11;
 
-import './interfaces/IUniswapV2ERC20.sol';
-import './libraries/SafeMath.sol';
+import './interfaces/IFizzyERC20.sol';
 
-contract UniswapV2ERC20 is IUniswapV2ERC20 {
-    using SafeMath for uint;
+contract FizzyERC20 is IFizzyERC20 {
 
-    string public constant name = 'Uniswap V2';
-    string public constant symbol = 'UNI-V2';
+    string public constant name = 'FizzyMagic';
+    string public constant symbol = 'FIZZY';
     uint8 public constant decimals = 18;
     uint  public totalSupply;
+    // uint256 private constant chainId = 1;
+
     mapping(address => uint) public balanceOf;
     mapping(address => mapping(address => uint)) public allowance;
 
@@ -36,14 +36,14 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
     }
 
     function _mint(address to, uint value) internal {
-        totalSupply = totalSupply.add(value);
-        balanceOf[to] = balanceOf[to].add(value);
+        totalSupply += value;
+        balanceOf[to] += value;
         emit Transfer(address(0), to, value);
     }
 
     function _burn(address from, uint value) internal {
-        balanceOf[from] = balanceOf[from].sub(value);
-        totalSupply = totalSupply.sub(value);
+        balanceOf[from] -= value;
+        totalSupply -= value;
         emit Transfer(from, address(0), value);
     }
 
@@ -53,8 +53,8 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
     }
 
     function _transfer(address from, address to, uint value) private {
-        balanceOf[from] = balanceOf[from].sub(value);
-        balanceOf[to] = balanceOf[to].add(value);
+        balanceOf[from] -= value;
+        balanceOf[to] += value;
         emit Transfer(from, to, value);
     }
 
@@ -71,14 +71,14 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
     function transferFrom(address from, address to, uint value) external returns (bool) {
         uint MAX_UINT = (2**256) - 1;
         if (allowance[from][msg.sender] != MAX_UINT) {
-            allowance[from][msg.sender] = allowance[from][msg.sender].sub(value);
+            allowance[from][msg.sender] -= value;
         }
         _transfer(from, to, value);
         return true;
     }
 
     function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
-        require(deadline >= block.timestamp, 'UniswapV2: EXPIRED');
+        require(deadline >= block.timestamp, 'FIZZY: EXPIRED');
         bytes32 digest = keccak256(
             abi.encodePacked(
                 '\x19\x01',
@@ -87,7 +87,7 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
             )
         );
         address recoveredAddress = ecrecover(digest, v, r, s);
-        require(recoveredAddress != address(0) && recoveredAddress == owner, 'UniswapV2: INVALID_SIGNATURE');
+        require(recoveredAddress != address(0) && recoveredAddress == owner, 'FIZZY: INVALID_SIGNATURE');
         _approve(owner, spender, value);
     }
 }

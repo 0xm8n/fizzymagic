@@ -58,7 +58,7 @@ describe("FizzyAssetToken", async () => {
     it("Should mint failed from invalid address", async () => {
         console.log(" ");
         await expect(testContract.connect(invidAddr).mint(owner.address,initSupply))
-        .to.be.revertedWith('ERC20: must have executer role to mint');
+        .to.be.revertedWith('Ownable: caller is not the owner');
 
         const totalSupply = await testContract.totalSupply();
         expect(totalSupply).to.equal(0);

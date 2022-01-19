@@ -1,36 +1,19 @@
 // SPDX-License-Identifier: MIT
 // Fizzy Magic
 
-pragma solidity 0.8.11;
+pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./standards/ERC20.sol";
+import "./access/Ownable.sol";
 
 /// @title Fizzy Magic
 /// @dev This contract allows contract calls to any contract (except BentoBox)
 /// from arbitrary callers thus, don't trust calls from this contract in any circumstances.
 
-contract FizzyMagicToken is Context, ERC20Burnable, Ownable {
+contract FizzyMagicToken is Ownable, ERC20 {
 
     uint256 private immutable _maxSupply;
-
-    constructor(string memory name, string memory symbol, uint256 cap) ERC20(name, symbol) {
-        require(cap > 0, "ERC20: cap is 0");
-        _maxSupply = cap;
-    }
-
-    function maxSupply() public view virtual returns (uint256) {
-        return _maxSupply;
-    }
-
-    function mint(address to, uint256 amount) public onlyOwner {
-        require(ERC20.totalSupply() + amount <= maxSupply(), "ERC20: cap exceeded");
-        _mint(to,amount);
-        _moveDelegates(address(0), _delegates[to], amount);
-    }
-
+    
     /// @notice A record of each accounts delegate
     mapping (address => address) internal _delegates;
 
@@ -52,14 +35,56 @@ contract FizzyMagicToken is Context, ERC20Burnable, Ownable {
     /// @notice The EIP-712 typehash for the delegation struct used by the contract
     bytes32 public constant DELEGATION_TYPEHASH = keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
 
-    /// @notice A record of states for signing / validating signatures
-    mapping (address => uint) public nonces;
-
       /// @notice An event thats emitted when an account changes its delegate
     event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
 
     /// @notice An event thats emitted when a delegate account's vote balance changes
     event DelegateVotesChanged(address indexed delegate, uint previousBalance, uint newBalance);
+
+    constructor(string memory name, string memory symbol, uint256 cap) ERC20(name, symbol) {
+        require(cap > 0, "ERC20: cap is 0");
+        _maxSupply = cap;
+    }
+
+    function maxSupply() public view virtual returns (uint256) {
+        return _maxSupply;
+    }
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        require(ERC20.totalSupply() + amount <= maxSupply(), "ERC20: cap exceeded");
+        _mint(to,amount);
+        _moveDelegates(address(0), _delegates[to], amount);
+    }
+
+    
+    /**
+     * @dev Destroys `amount` tokens from the caller.
+     *
+     * See {ERC20-_burn}.
+     */
+    function burn(uint256 amount) public {
+        _burn(_msgSender(), amount);
+    }
+
+    /**
+     * @dev Destroys `amount` tokens from `account`, deducting from the caller's
+     * allowance.
+     *
+     * See {ERC20-_burn} and {ERC20-allowance}.
+     *
+     * Requirements:
+     *
+     * - the caller must have allowance for ``accounts``'s tokens of at least
+     * `amount`.
+     */
+    function burnFrom(address account, uint256 amount) public {
+        uint256 currentAllowance = allowance(account, _msgSender());
+        require(currentAllowance >= amount, "ERC20: burn amount exceeds allowance");
+        unchecked {
+            _approve(account, _msgSender(), currentAllowance - amount);
+        }
+        _burn(account, amount);
+    }
 
     /**
      * @notice Delegate votes from `msg.sender` to `delegatee`

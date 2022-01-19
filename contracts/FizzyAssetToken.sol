@@ -1,66 +1,46 @@
 // SPDX-License-Identifier: MIT
 // Fizzy Asset Token
 
-pragma solidity 0.8.11;
+pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./standards/ERC20.sol";
+import "./access/Ownable.sol";
 
-/// @title Fizzy Stable
-/// @dev This contract allows contract calls to any contract (except BentoBox)
-/// from arbitrary callers thus, don't trust calls from this contract in any circumstances.
-contract FizzyAssetToken is Context, ERC20Burnable, ERC20Pausable, Ownable {
+contract FizzyAssetToken is ERC20, Ownable {
 
-    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
-    }
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
 
-    /**
-     * @dev Creates `amount` new tokens for `to`.
-     *
-     * See {ERC20-_mint}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `EXECUTER_ROLE`.
-     */
-    function mint(address to, uint256 amount) public virtual onlyOwner{
+    function mint(address to, uint256 amount) public onlyOwner{
         _mint(to, amount);
     }
 
     /**
-     * @dev Pauses all token transfers.
+     * @dev Destroys `amount` tokens from the caller.
      *
-     * See {ERC20Pausable} and {Pausable-_pause}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `PAUSER_ROLE`.
+     * See {ERC20-_burn}.
      */
-    function pause() public virtual onlyOwner{
-        _pause();
+    function burn(uint256 amount) public {
+        _burn(_msgSender(), amount);
     }
 
     /**
-     * @dev Unpauses all token transfers.
+     * @dev Destroys `amount` tokens from `account`, deducting from the caller's
+     * allowance.
      *
-     * See {ERC20Pausable} and {Pausable-_unpause}.
+     * See {ERC20-_burn} and {ERC20-allowance}.
      *
      * Requirements:
      *
-     * - the caller must have the `PAUSER_ROLE`.
+     * - the caller must have allowance for ``accounts``'s tokens of at least
+     * `amount`.
      */
-    function unpause() public virtual onlyOwner{
-        _unpause();
+    function burnFrom(address account, uint256 amount) public {
+        uint256 currentAllowance = allowance(account, _msgSender());
+        require(currentAllowance >= amount, "ERC20: burn amount exceeds allowance");
+        unchecked {
+            _approve(account, _msgSender(), currentAllowance - amount);
+        }
+        _burn(account, amount);
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual override(ERC20, ERC20Pausable) {
-        super._beforeTokenTransfer(from, to, amount);
-    }
 }

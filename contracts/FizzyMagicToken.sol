@@ -7,8 +7,6 @@ import "./standards/ERC20.sol";
 import "./access/Ownable.sol";
 
 /// @title Fizzy Magic
-/// @dev This contract allows contract calls to any contract (except BentoBox)
-/// from arbitrary callers thus, don't trust calls from this contract in any circumstances.
 
 contract FizzyMagicToken is Ownable, ERC20 {
 
@@ -56,7 +54,6 @@ contract FizzyMagicToken is Ownable, ERC20 {
         _moveDelegates(address(0), _delegates[to], amount);
     }
 
-    
     /**
      * @dev Destroys `amount` tokens from the caller.
      *

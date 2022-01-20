@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: MIT
-// Fizzy Asset Token
+// Fizzy Trade Token
 
 pragma solidity ^0.8.11;
 
 import "./standards/ERC20.sol";
-import "./access/Ownable.sol";
+import "./utils/ExecutorAccess.sol";
 
-contract FizzyAssetToken is ERC20, Ownable {
+contract FizzyTradeToken is ERC20, ExecutorAccess {
 
-    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
+    constructor(string memory name, string memory symbol, address exceutor) ERC20(name, symbol) {
+        _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _grantRole(EXECUTOR_ROLE, exceutor);
+    }
 
-    function mint(address to, uint256 amount) public onlyOwner{
+    function mint(address to, uint256 amount) public onlyExecutor{
         _mint(to, amount);
     }
 

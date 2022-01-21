@@ -1,12 +1,13 @@
 const {expect} = require("chai");
-const {ethers} = require("hardhat");
-const BN = require('bn.js');
+const {ethers,network} = require('ethers');
+const { toWei } = require('./shared/utilities')
+
+const BN = ethers.BigNumber;
 
 describe("FizzyTradeToken", async () => {
     let testContract;
     let snapshotId;
-    let baseNumber = new BN(10,10).pow(new BN(26,10));
-    let initSupply = (new BN(10,10).mul(baseNumber)).toString(10);
+    let initSupply = toWei(10**9);
 
     const [owner,execAddr,toAddr,invidAddr] = await ethers.getSigners();
     console.log("owner: ",owner.address);

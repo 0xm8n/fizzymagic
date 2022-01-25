@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Fizzy Magic
 
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.9;
 
 import "./standards/ERC20.sol";
 import "./access/Ownable.sol";

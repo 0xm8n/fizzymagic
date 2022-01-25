@@ -1,8 +1,6 @@
 const {expect} = require("chai");
 const {ethers,network} = require('ethers');
-const { toWei } = require('./shared/utilities')
-
-const BN = ethers.BigNumber;
+const { toWei } = require('../../test/shared/utilities')
 
 describe("FizzyTradeToken", async () => {
     let testContract;

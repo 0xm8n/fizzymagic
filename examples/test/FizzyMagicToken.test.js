@@ -1,15 +1,14 @@
 const {expect} = require("chai");
-const {ethers,network} = require("hardhat");
-const BN = require('bn.js');
+const {ethers,network} = require('ethers');
+const { toWei } = require('./shared/utilities')
 
 describe("FizzyMagicToken", async () => {
     let testContract;
     let snapshotId;
-    let baseNumber = new BN(10,10).pow(new BN(26,10));
-    let initSupply = (new BN(10,10).mul(baseNumber)).toString(10);
-    let maxSupply = (new BN(15,10).mul(baseNumber)).toString(10);
-    let addSupply = (new BN(3,10).mul(baseNumber)).toString(10);
-    let passSupply = (new BN(13,10).mul(baseNumber)).toString(10);
+    let initSupply = toWei(10**9).toString();
+    let maxSupply = toWei(15*10**8).toString();
+    let addSupply = toWei(3*10**8).toString();
+    let passSupply = toWei(13*10**8).toString();
 
     const [owner,execAddr,toAddr,invidAddr] = await ethers.getSigners();
     console.log("owner: ",owner.address);

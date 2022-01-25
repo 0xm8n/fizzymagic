@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.9;
 
 interface IFizzyRouter01 {
     function factory() external view returns (address);

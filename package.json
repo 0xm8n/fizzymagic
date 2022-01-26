@@ -2,8 +2,8 @@
   "name": "fizzymagic",
   "version": "1.0.0",
   "license": "MIT",
-  "keywords": [],
   "author": "",
+  "description": "",
   "scripts": {
     "lint": "prettier ./test/*.ts --check",
     "lint:fix": "prettier ./test/*.ts --write",

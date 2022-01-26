@@ -10,9 +10,7 @@ import "solidity-coverage";
 dotenv.config();
 
 const testWallet = {
-  mnemonic:
-    process.env.MNEMONIC ||
-    "horn test horn junk test junk test horn junk test junk horn",
+  mnemonic: process.env.MNEMONIC || "horn test horn junk test junk test horn junk test junk horn",
 };
 
 // This is a sample Hardhat task. To learn how to create your own go to

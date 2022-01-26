@@ -35,7 +35,7 @@ import "../standards/ERC165.sol";
  *
  * Roles can be granted and revoked dynamically via the {grantRole} and
  * {revokeRole} functions. Each role has an associated admin role, and only
- * accounts that have a role's admin role can call {grantRole} and {revokeRole}.
+ * accounts that have a role"s admin role can call {grantRole} and {revokeRole}.
  *
  * By default, the admin role for all roles is `DEFAULT_ADMIN_ROLE`, which means
  * that only accounts with this role will be able to grant or revoke other
@@ -111,7 +111,7 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      * @dev Returns the admin role that controls `role`. See {grantRole} and
      * {revokeRole}.
      *
-     * To change a role's admin, use {_setRoleAdmin}.
+     * To change a role"s admin, use {_setRoleAdmin}.
      */
     function getRoleAdmin(bytes32 role) public view override returns (bytes32) {
         return _roles[role].adminRole;
@@ -125,7 +125,7 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * Requirements:
      *
-     * - the caller must have ``role``'s admin role.
+     * - the caller must have ``role``"s admin role.
      */
     function grantRole(bytes32 role, address account) public virtual override onlyRole(getRoleAdmin(role)) {
         _grantRole(role, account);
@@ -138,7 +138,7 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * Requirements:
      *
-     * - the caller must have ``role``'s admin role.
+     * - the caller must have ``role``"s admin role.
      */
     function revokeRole(bytes32 role, address account) public virtual override onlyRole(getRoleAdmin(role)) {
         _revokeRole(role, account);
@@ -147,7 +147,7 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
     /**
      * @dev Revokes `role` from the calling account.
      *
-     * Roles are often managed via {grantRole} and {revokeRole}: this function's
+     * Roles are often managed via {grantRole} and {revokeRole}: this function"s
      * purpose is to provide a mechanism for accounts to lose their privileges
      * if they are compromised (such as when a trusted device is misplaced).
      *
@@ -187,7 +187,7 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
     }
 
     /**
-     * @dev Sets `adminRole` as ``role``'s admin role.
+     * @dev Sets `adminRole` as ``role``"s admin role.
      *
      * Emits a {RoleAdminChanged} event.
      */

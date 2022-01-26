@@ -4,7 +4,7 @@
 pragma solidity ^0.8.9;
 
 /**
- * @dev Wrappers over Solidity's uintXX/intXX casting operators with added overflow
+ * @dev Wrappers over Solidity"s uintXX/intXX casting operators with added overflow
  * checks.
  *
  * Downcasting from uint256/int256 in Solidity does not revert on overflow. This can
@@ -13,7 +13,7 @@ pragma solidity ^0.8.9;
  * reverting the transaction when such an operation overflows.
  *
  * Using this library instead of the unchecked operations eliminates an entire
- * class of bugs, so it's recommended to use it always.
+ * class of bugs, so it"s recommended to use it always.
  *
  * Can be combined with {SafeMath} and {SignedSafeMath} to extend it to smaller types, by performing
  * all math on `uint256` and `int256` and then downcasting.
@@ -23,7 +23,7 @@ library SafeCast {
      * @dev Returns the downcasted uint224 from uint256, reverting on
      * overflow (when the input is greater than largest uint224).
      *
-     * Counterpart to Solidity's `uint224` operator.
+     * Counterpart to Solidity"s `uint224` operator.
      *
      * Requirements:
      *
@@ -38,7 +38,7 @@ library SafeCast {
      * @dev Returns the downcasted uint128 from uint256, reverting on
      * overflow (when the input is greater than largest uint128).
      *
-     * Counterpart to Solidity's `uint128` operator.
+     * Counterpart to Solidity"s `uint128` operator.
      *
      * Requirements:
      *
@@ -53,7 +53,7 @@ library SafeCast {
      * @dev Returns the downcasted uint96 from uint256, reverting on
      * overflow (when the input is greater than largest uint96).
      *
-     * Counterpart to Solidity's `uint96` operator.
+     * Counterpart to Solidity"s `uint96` operator.
      *
      * Requirements:
      *
@@ -68,7 +68,7 @@ library SafeCast {
      * @dev Returns the downcasted uint64 from uint256, reverting on
      * overflow (when the input is greater than largest uint64).
      *
-     * Counterpart to Solidity's `uint64` operator.
+     * Counterpart to Solidity"s `uint64` operator.
      *
      * Requirements:
      *
@@ -83,7 +83,7 @@ library SafeCast {
      * @dev Returns the downcasted uint32 from uint256, reverting on
      * overflow (when the input is greater than largest uint32).
      *
-     * Counterpart to Solidity's `uint32` operator.
+     * Counterpart to Solidity"s `uint32` operator.
      *
      * Requirements:
      *
@@ -98,7 +98,7 @@ library SafeCast {
      * @dev Returns the downcasted uint16 from uint256, reverting on
      * overflow (when the input is greater than largest uint16).
      *
-     * Counterpart to Solidity's `uint16` operator.
+     * Counterpart to Solidity"s `uint16` operator.
      *
      * Requirements:
      *
@@ -113,7 +113,7 @@ library SafeCast {
      * @dev Returns the downcasted uint8 from uint256, reverting on
      * overflow (when the input is greater than largest uint8).
      *
-     * Counterpart to Solidity's `uint8` operator.
+     * Counterpart to Solidity"s `uint8` operator.
      *
      * Requirements:
      *
@@ -141,7 +141,7 @@ library SafeCast {
      * overflow (when the input is less than smallest int128 or
      * greater than largest int128).
      *
-     * Counterpart to Solidity's `int128` operator.
+     * Counterpart to Solidity"s `int128` operator.
      *
      * Requirements:
      *
@@ -159,7 +159,7 @@ library SafeCast {
      * overflow (when the input is less than smallest int64 or
      * greater than largest int64).
      *
-     * Counterpart to Solidity's `int64` operator.
+     * Counterpart to Solidity"s `int64` operator.
      *
      * Requirements:
      *
@@ -177,7 +177,7 @@ library SafeCast {
      * overflow (when the input is less than smallest int32 or
      * greater than largest int32).
      *
-     * Counterpart to Solidity's `int32` operator.
+     * Counterpart to Solidity"s `int32` operator.
      *
      * Requirements:
      *
@@ -195,7 +195,7 @@ library SafeCast {
      * overflow (when the input is less than smallest int16 or
      * greater than largest int16).
      *
-     * Counterpart to Solidity's `int16` operator.
+     * Counterpart to Solidity"s `int16` operator.
      *
      * Requirements:
      *
@@ -213,7 +213,7 @@ library SafeCast {
      * overflow (when the input is less than smallest int8 or
      * greater than largest int8).
      *
-     * Counterpart to Solidity's `int8` operator.
+     * Counterpart to Solidity"s `int8` operator.
      *
      * Requirements:
      *

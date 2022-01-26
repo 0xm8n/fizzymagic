@@ -3,16 +3,15 @@ module.exports = {
     {
       files: "*.ts",
       options: {
-        printWidth: 120,
+        printWidth: 145,
         semi: true,
-        singleQuote: true,
         trailingComma: "es5",
       },
     },
     {
       files: "*.sol",
       options: {
-        printWidth: 120,
+        printWidth: 140,
         tabWidth: 4,
         useTabs: false,
         singleQuote: false,

@@ -1,33 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import '../interfaces/IFizzyPair.sol';
-import '../interfaces/IFizzyFactory.sol';
-import './Math.sol';
-import './FullMath.sol';
-import './FizzyLibrary.sol';
+import "hardhat/console.sol";
+import "../interfaces/IFizzyPair.sol";
+import "../interfaces/IFizzyFactory.sol";
+import "./Math.sol";
+import "./FullMath.sol";
+import "./FizzyLibrary.sol";
 
 // library containing some math for dealing with the liquidity shares of a pair, e.g. computing their exact value
 // in terms of the underlying tokens
 library FizzyLiquidityMathLibrary {
-
     // computes the direction and magnitude of the profit-maximizing trade
     function computeProfitMaximizingTrade(
         uint256 truePriceTokenA,
         uint256 truePriceTokenB,
         uint256 reserveA,
         uint256 reserveB
-    ) pure internal returns (bool aToB, uint256 amountIn) {
+    ) internal pure returns (bool aToB, uint256 amountIn) {
         aToB = FullMath.mulDiv(reserveA, truePriceTokenB, reserveB) < truePriceTokenA;
 
         uint256 invariant = reserveA * reserveB;
 
         uint256 leftSide = Math.sqrt(
-            FullMath.mulDiv(
-                invariant * 1000,
-                aToB ? truePriceTokenA : truePriceTokenB,
-                (aToB ? truePriceTokenB : truePriceTokenA) * 997
-            )
+            FullMath.mulDiv(invariant * 1000, aToB ? truePriceTokenA : truePriceTokenB, (aToB ? truePriceTokenB : truePriceTokenA) * 997)
         );
         uint256 rightSide = (aToB ? (reserveA * 1000) : (reserveB * 1000)) / 997;
 
@@ -44,11 +40,11 @@ library FizzyLiquidityMathLibrary {
         address tokenB,
         uint256 truePriceTokenA,
         uint256 truePriceTokenB
-    ) view internal returns (uint256 reserveA, uint256 reserveB) {
+    ) internal view returns (uint256 reserveA, uint256 reserveB) {
         // first get reserves before the swap
         (reserveA, reserveB) = FizzyLibrary.getReserves(factory, tokenA, tokenB);
 
-        require(reserveA > 0 && reserveB > 0, 'FizzyArbitrageLibrary: ZERO_PAIR_RESERVES');
+        require(reserveA > 0 && reserveB > 0, "FizzyArbitrageLibrary: ZERO_PAIR_RESERVES");
 
         // then compute how much to swap to arb to the true price
         (bool aToB, uint256 amountIn) = computeProfitMaximizingTrade(truePriceTokenA, truePriceTokenB, reserveA, reserveB);
@@ -59,11 +55,11 @@ library FizzyLiquidityMathLibrary {
 
         // now affect the trade to the reserves
         if (aToB) {
-            uint amountOut = FizzyLibrary.getAmountOut(amountIn, reserveA, reserveB);
+            uint256 amountOut = FizzyLibrary.getAmountOut(amountIn, reserveA, reserveB);
             reserveA += amountIn;
             reserveB -= amountOut;
         } else {
-            uint amountOut = FizzyLibrary.getAmountOut(amountIn, reserveB, reserveA);
+            uint256 amountOut = FizzyLibrary.getAmountOut(amountIn, reserveB, reserveA);
             reserveB += amountIn;
             reserveA -= amountOut;
         }
@@ -76,16 +72,16 @@ library FizzyLiquidityMathLibrary {
         uint256 totalSupply,
         uint256 liquidityAmount,
         bool feeOn,
-        uint kLast
+        uint256 kLast
     ) internal pure returns (uint256 tokenAAmount, uint256 tokenBAmount) {
         if (feeOn && kLast > 0) {
-            uint rootK = Math.sqrt(reservesA * reservesB);
-            uint rootKLast = Math.sqrt(kLast);
+            uint256 rootK = Math.sqrt(reservesA * reservesB);
+            uint256 rootKLast = Math.sqrt(kLast);
             if (rootK > rootKLast) {
-                uint numerator1 = totalSupply;
-                uint numerator2 = rootK - rootKLast;
-                uint denominator = (rootK * 5) + rootKLast;
-                uint feeLiquidity = FullMath.mulDiv(numerator1, numerator2, denominator);
+                uint256 numerator1 = totalSupply;
+                uint256 numerator2 = rootK - rootKLast;
+                uint256 denominator = (rootK * 5) + rootKLast;
+                uint256 feeLiquidity = FullMath.mulDiv(numerator1, numerator2, denominator);
                 totalSupply = totalSupply + feeLiquidity;
             }
         }
@@ -104,8 +100,8 @@ library FizzyLiquidityMathLibrary {
         (uint256 reservesA, uint256 reservesB) = FizzyLibrary.getReserves(factory, tokenA, tokenB);
         IFizzyPair pair = IFizzyPair(FizzyLibrary.pairFor(factory, tokenA, tokenB));
         bool feeOn = IFizzyFactory(factory).feeTo() != address(0);
-        uint kLast = feeOn ? pair.kLast() : 0;
-        uint totalSupply = pair.totalSupply();
+        uint256 kLast = feeOn ? pair.kLast() : 0;
+        uint256 totalSupply = pair.totalSupply();
         return computeLiquidityValue(reservesA, reservesB, totalSupply, liquidityAmount, feeOn, kLast);
     }
 
@@ -118,19 +114,16 @@ library FizzyLiquidityMathLibrary {
         uint256 truePriceTokenA,
         uint256 truePriceTokenB,
         uint256 liquidityAmount
-    ) internal view returns (
-        uint256 tokenAAmount,
-        uint256 tokenBAmount
-    ) {
+    ) internal view returns (uint256 tokenAAmount, uint256 tokenBAmount) {
         bool feeOn = IFizzyFactory(factory).feeTo() != address(0);
         IFizzyPair pair = IFizzyPair(FizzyLibrary.pairFor(factory, tokenA, tokenB));
-        uint kLast = feeOn ? pair.kLast() : 0;
-        uint totalSupply = pair.totalSupply();
+        uint256 kLast = feeOn ? pair.kLast() : 0;
+        uint256 totalSupply = pair.totalSupply();
 
         // this also checks that totalSupply > 0
-        require(totalSupply >= liquidityAmount && liquidityAmount > 0, 'ComputeLiquidityValue: LIQUIDITY_AMOUNT');
+        require(totalSupply >= liquidityAmount && liquidityAmount > 0, "ComputeLiquidityValue: LIQUIDITY_AMOUNT");
 
-        (uint reservesA, uint reservesB) = getReservesAfterArbitrage(factory, tokenA, tokenB, truePriceTokenA, truePriceTokenB);
+        (uint256 reservesA, uint256 reservesB) = getReservesAfterArbitrage(factory, tokenA, tokenB, truePriceTokenA, truePriceTokenB);
 
         return computeLiquidityValue(reservesA, reservesB, totalSupply, liquidityAmount, feeOn, kLast);
     }

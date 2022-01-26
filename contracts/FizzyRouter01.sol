@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import './utils/TransferHelper.sol';
-import './utils/FizzyLibrary.sol';
-import './standards/IERC20.sol';
-import './interfaces/IFizzyFactory.sol';
-import './interfaces/IFizzyRouter01.sol';
-import './interfaces/IWETH.sol';
+import "hardhat/console.sol";
+import "./utils/TransferHelper.sol";
+import "./utils/FizzyLibrary.sol";
+import "./standards/IERC20.sol";
+import "./interfaces/IFizzyFactory.sol";
+import "./interfaces/IFizzyRouter01.sol";
+import "./interfaces/IWETH.sol";
 
 contract FizzyRouter01 is IFizzyRouter01 {
     uint256 private constant MAX_UINT256 = (2**256) - 1;
@@ -14,7 +15,7 @@ contract FizzyRouter01 is IFizzyRouter01 {
     address public immutable override WETH;
 
     modifier ensure(uint deadline) {
-        require(deadline >= block.timestamp, 'FizzyRouter: EXPIRED');
+        require(deadline >= block.timestamp, "FizzyRouter: EXPIRED");
         _;
     }
 
@@ -46,12 +47,12 @@ contract FizzyRouter01 is IFizzyRouter01 {
         } else {
             uint amountBOptimal = FizzyLibrary.quote(amountADesired, reserveA, reserveB);
             if (amountBOptimal <= amountBDesired) {
-                require(amountBOptimal >= amountBMin, 'FizzyRouter: INSUFFICIENT_B_AMOUNT');
+                require(amountBOptimal >= amountBMin, "FizzyRouter: INSUFFICIENT_B_AMOUNT");
                 (amountA, amountB) = (amountADesired, amountBOptimal);
             } else {
                 uint amountAOptimal = FizzyLibrary.quote(amountBDesired, reserveB, reserveA);
                 assert(amountAOptimal <= amountADesired);
-                require(amountAOptimal >= amountAMin, 'FizzyRouter: INSUFFICIENT_A_AMOUNT');
+                require(amountAOptimal >= amountAMin, "FizzyRouter: INSUFFICIENT_A_AMOUNT");
                 (amountA, amountB) = (amountAOptimal, amountBDesired);
             }
         }
@@ -111,8 +112,8 @@ contract FizzyRouter01 is IFizzyRouter01 {
         (uint amount0, uint amount1) = IFizzyPair(pair).burn(to);
         (address token0,) = FizzyLibrary.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
-        require(amountA >= amountAMin, 'FizzyRouter: INSUFFICIENT_A_AMOUNT');
-        require(amountB >= amountBMin, 'FizzyRouter: INSUFFICIENT_B_AMOUNT');
+        require(amountA >= amountAMin, "FizzyRouter: INSUFFICIENT_A_AMOUNT");
+        require(amountB >= amountBMin, "FizzyRouter: INSUFFICIENT_B_AMOUNT");
     }
     function removeLiquidityETH(
         address token,
@@ -185,7 +186,7 @@ contract FizzyRouter01 is IFizzyRouter01 {
         uint deadline
     ) external override ensure(deadline) returns (uint[] memory amounts) {
         amounts = FizzyLibrary.getAmountsOut(factory, amountIn, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'FizzyRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(amounts[amounts.length - 1] >= amountOutMin, "FizzyRouter: INSUFFICIENT_OUTPUT_AMOUNT");
         TransferHelper.safeTransferFrom(path[0], msg.sender, FizzyLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
@@ -197,7 +198,7 @@ contract FizzyRouter01 is IFizzyRouter01 {
         uint deadline
     ) external override ensure(deadline) returns (uint[] memory amounts) {
         amounts = FizzyLibrary.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'FizzyRouter: EXCESSIVE_INPUT_AMOUNT');
+        require(amounts[0] <= amountInMax, "FizzyRouter: EXCESSIVE_INPUT_AMOUNT");
         TransferHelper.safeTransferFrom(path[0], msg.sender, FizzyLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
@@ -208,9 +209,9 @@ contract FizzyRouter01 is IFizzyRouter01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[0] == WETH, 'FizzyRouter: INVALID_PATH');
+        require(path[0] == WETH, "FizzyRouter: INVALID_PATH");
         amounts = FizzyLibrary.getAmountsOut(factory, msg.value, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'FizzyRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(amounts[amounts.length - 1] >= amountOutMin, "FizzyRouter: INSUFFICIENT_OUTPUT_AMOUNT");
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(FizzyLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
@@ -221,9 +222,9 @@ contract FizzyRouter01 is IFizzyRouter01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[path.length - 1] == WETH, 'FizzyRouter: INVALID_PATH');
+        require(path[path.length - 1] == WETH, "FizzyRouter: INVALID_PATH");
         amounts = FizzyLibrary.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'FizzyRouter: EXCESSIVE_INPUT_AMOUNT');
+        require(amounts[0] <= amountInMax, "FizzyRouter: EXCESSIVE_INPUT_AMOUNT");
         TransferHelper.safeTransferFrom(path[0], msg.sender, FizzyLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
@@ -235,9 +236,9 @@ contract FizzyRouter01 is IFizzyRouter01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[path.length - 1] == WETH, 'FizzyRouter: INVALID_PATH');
+        require(path[path.length - 1] == WETH, "FizzyRouter: INVALID_PATH");
         amounts = FizzyLibrary.getAmountsOut(factory, amountIn, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'FizzyRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(amounts[amounts.length - 1] >= amountOutMin, "FizzyRouter: INSUFFICIENT_OUTPUT_AMOUNT");
         TransferHelper.safeTransferFrom(path[0], msg.sender, FizzyLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
@@ -250,9 +251,9 @@ contract FizzyRouter01 is IFizzyRouter01 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[0] == WETH, 'FizzyRouter: INVALID_PATH');
+        require(path[0] == WETH, "FizzyRouter: INVALID_PATH");
         amounts = FizzyLibrary.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= msg.value, 'FizzyRouter: EXCESSIVE_INPUT_AMOUNT');
+        require(amounts[0] <= msg.value, "FizzyRouter: EXCESSIVE_INPUT_AMOUNT");
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(FizzyLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);

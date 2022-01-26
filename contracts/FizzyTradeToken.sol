@@ -3,6 +3,7 @@
 
 pragma solidity ^0.8.9;
 
+import "hardhat/console.sol";
 import "./standards/ERC20.sol";
 import "./utils/ExecutorAccess.sol";
 
@@ -27,14 +28,14 @@ contract FizzyTradeToken is ERC20, ExecutorAccess {
     }
 
     /**
-     * @dev Destroys `amount` tokens from `account`, deducting from the caller's
+     * @dev Destroys `amount` tokens from `account`, deducting from the caller"s
      * allowance.
      *
      * See {ERC20-_burn} and {ERC20-allowance}.
      *
      * Requirements:
      *
-     * - the caller must have allowance for ``accounts``'s tokens of at least
+     * - the caller must have allowance for ``accounts``"s tokens of at least
      * `amount`.
      */
     function burnFrom(address account, uint256 amount) public {

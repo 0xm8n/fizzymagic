@@ -37,7 +37,7 @@ library Address {
     }
 
     /**
-     * @dev Replacement for Solidity's `transfer`: sends `amount` wei to
+     * @dev Replacement for Solidity"s `transfer`: sends `amount` wei to
      * `recipient`, forwarding all available gas and reverting on errors.
      *
      * https://eips.ethereum.org/EIPS/eip-1884[EIP1884] increases the gas cost
@@ -188,7 +188,7 @@ library Address {
     }
 
     /**
-     * @dev Tool to verifies that a low level call was successful, and revert if it wasn't, either by bubbling the
+     * @dev Tool to verifies that a low level call was successful, and revert if it wasn"t, either by bubbling the
      * revert reason using the provided one.
      *
      * _Available since v4.3._

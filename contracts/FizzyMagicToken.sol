@@ -3,6 +3,7 @@
 
 pragma solidity ^0.8.9;
 
+import "hardhat/console.sol";
 import "./standards/ERC20.sol";
 import "./access/Ownable.sol";
 
@@ -27,7 +28,7 @@ contract FizzyMagicToken is Ownable, ERC20 {
     /// @notice The number of checkpoints for each account
     mapping (address => uint32) public numCheckpoints;
 
-    /// @notice The EIP-712 typehash for the contract's domain
+    /// @notice The EIP-712 typehash for the contract"s domain
     bytes32 public constant DOMAIN_TYPEHASH = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
 
     /// @notice The EIP-712 typehash for the delegation struct used by the contract
@@ -36,7 +37,7 @@ contract FizzyMagicToken is Ownable, ERC20 {
       /// @notice An event thats emitted when an account changes its delegate
     event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
 
-    /// @notice An event thats emitted when a delegate account's vote balance changes
+    /// @notice An event thats emitted when a delegate account"s vote balance changes
     event DelegateVotesChanged(address indexed delegate, uint previousBalance, uint newBalance);
 
     constructor(string memory name, string memory symbol, uint256 cap) ERC20(name, symbol) {
@@ -64,14 +65,14 @@ contract FizzyMagicToken is Ownable, ERC20 {
     }
 
     /**
-     * @dev Destroys `amount` tokens from `account`, deducting from the caller's
+     * @dev Destroys `amount` tokens from `account`, deducting from the caller"s
      * allowance.
      *
      * See {ERC20-_burn} and {ERC20-allowance}.
      *
      * Requirements:
      *
-     * - the caller must have allowance for ``accounts``'s tokens of at least
+     * - the caller must have allowance for ``accounts``"s tokens of at least
      * `amount`.
      */
     function burnFrom(address account, uint256 amount) public {

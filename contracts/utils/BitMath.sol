@@ -7,11 +7,11 @@ library BitMath {
     uint32 private constant MAX_UINT32 = (2**32) - 1;
     uint16 private constant MAX_UINT16 = (2**16) - 1;
     uint8 private constant MAX_UINT8 = (2**8) - 1;
-    
+
     // returns the 0 indexed position of the most significant bit of the input x
     // s.t. x >= 2**msb and x < 2**(msb+1)
     function mostSignificantBit(uint256 x) internal pure returns (uint8 r) {
-        require(x > 0, 'BitMath::mostSignificantBit: zero');
+        require(x > 0, "BitMath::mostSignificantBit: zero");
 
         if (x >= 0x100000000000000000000000000000000) {
             x >>= 128;
@@ -48,7 +48,7 @@ library BitMath {
     // s.t. (x & 2**lsb) != 0 and (x & (2**(lsb) - 1)) == 0)
     // i.e. the bit at the index is set and the mask of all lower bits is 0
     function leastSignificantBit(uint256 x) internal pure returns (uint8 r) {
-        require(x > 0, 'BitMath::leastSignificantBit: zero');
+        require(x > 0, "BitMath::leastSignificantBit: zero");
 
         r = 255;
         if (x & MAX_UINT128 > 0) {

@@ -18,10 +18,10 @@ library FullMath {
         uint256 h,
         uint256 d
     ) private pure returns (uint256) {
-        int pow2 = int(d) & -int(d);
-        d /= uint(pow2);
-        l /= uint(pow2);
-        l += uint(int(h) * ((-pow2) / pow2 + 1));
+        int256 pow2 = int256(d) & -int256(d);
+        d /= uint256(pow2);
+        l /= uint256(pow2);
+        l += uint256(int256(h) * ((-pow2) / pow2 + 1));
         uint256 r = 1;
         r *= 2 - d * r;
         r *= 2 - d * r;
@@ -47,7 +47,7 @@ library FullMath {
 
         if (h == 0) return l / d;
 
-        require(h < d, 'FullMath: FULLDIV_OVERFLOW');
+        require(h < d, "FullMath: FULLDIV_OVERFLOW");
         return fullDiv(l, h, d);
     }
 }

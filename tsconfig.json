@@ -1,17 +1,12 @@
 {
   "compilerOptions": {
-    "types": [
-      "node",
-      "mocha"
-    ],
-    "target": "es5",
+    "target": "es2018",
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
     "outDir": "dist",
-    "resolveJsonModule": true,
-    "noImplicitAny": false
+    "declaration": true
   },
-  "include": ["./scripts", "./test", "./typechain"],
+  "include": ["./scripts", "./test", "./typechain", "example/test/index.ts", "example/scripts/deploy.ts"],
   "files": ["./hardhat.config.ts"]
 }

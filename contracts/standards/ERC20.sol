@@ -7,10 +7,9 @@ import "./IERC20.sol";
 import "../utils/Context.sol";
 
 contract ERC20 is Context, IERC20 {
-
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
-    mapping(address => uint) public nonces;
+    mapping(address => uint256) public nonces;
 
     string private _name;
     string private _symbol;

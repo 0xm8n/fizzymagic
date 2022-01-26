@@ -8,7 +8,7 @@ pragma solidity ^0.8.9;
  */
 interface IAccessControl {
     /**
-     * @dev Emitted when `newAdminRole` is set as ``role``'s admin role, replacing `previousAdminRole`
+     * @dev Emitted when `newAdminRole` is set as ``role``"s admin role, replacing `previousAdminRole`
      *
      * `DEFAULT_ADMIN_ROLE` is the starting admin for all roles, despite
      * {RoleAdminChanged} not being emitted signaling this.
@@ -43,7 +43,7 @@ interface IAccessControl {
      * @dev Returns the admin role that controls `role`. See {grantRole} and
      * {revokeRole}.
      *
-     * To change a role's admin, use {AccessControl-_setRoleAdmin}.
+     * To change a role"s admin, use {AccessControl-_setRoleAdmin}.
      */
     function getRoleAdmin(bytes32 role) external view returns (bytes32);
 
@@ -55,7 +55,7 @@ interface IAccessControl {
      *
      * Requirements:
      *
-     * - the caller must have ``role``'s admin role.
+     * - the caller must have ``role``"s admin role.
      */
     function grantRole(bytes32 role, address account) external;
 
@@ -66,14 +66,14 @@ interface IAccessControl {
      *
      * Requirements:
      *
-     * - the caller must have ``role``'s admin role.
+     * - the caller must have ``role``"s admin role.
      */
     function revokeRole(bytes32 role, address account) external;
 
     /**
      * @dev Revokes `role` from the calling account.
      *
-     * Roles are often managed via {grantRole} and {revokeRole}: this function's
+     * Roles are often managed via {grantRole} and {revokeRole}: this function"s
      * purpose is to provide a mechanism for accounts to lose their privileges
      * if they are compromised (such as when a trusted device is misplaced).
      *

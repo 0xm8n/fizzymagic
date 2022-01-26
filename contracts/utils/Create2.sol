@@ -7,7 +7,7 @@ pragma solidity ^0.8.9;
  * @dev Helper to make usage of the `CREATE2` EVM opcode easier and safer.
  * `CREATE2` can be used to compute in advance the address where a smart
  * contract will be deployed, which allows for interesting new mechanisms known
- * as 'counterfactual interactions'.
+ * as "counterfactual interactions".
  *
  * See the https://eips.ethereum.org/EIPS/eip-1014#motivation[EIP] for more
  * information.
@@ -52,7 +52,7 @@ library Create2 {
 
     /**
      * @dev Returns the address where a contract will be stored if deployed via {deploy} from a contract located at
-     * `deployer`. If `deployer` is this contract's address, returns the same value as {computeAddress}.
+     * `deployer`. If `deployer` is this contract"s address, returns the same value as {computeAddress}.
      */
     function computeAddress(
         bytes32 salt,

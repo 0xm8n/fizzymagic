@@ -3,7 +3,7 @@
 pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
-import "../access/AccessControl.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract ExecutorAccess is AccessControl {
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");

@@ -16,7 +16,7 @@ contract Greeter {
     }
 
     function setGreeting(string memory _greeting) public {
-        console.log("Changing greeting from" , greeting, "to", _greeting);
+        console.log("Changing greeting from", greeting, "to", _greeting);
         greeting = _greeting;
     }
 }

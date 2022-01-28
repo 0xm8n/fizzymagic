@@ -1,18 +1,21 @@
-/* eslint-disable node/no-missing-require */
-const { expect } = require("chai");
-const { ethers, network } = require("ethers");
-const { toWei } = require("./shared/utilities");
+/* eslint-disable node/no-missing-import */
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { expect } from "chai";
+import { ethers, network } from "hardhat";
+import { FizzyMagicToken } from "../typechain";
+import { toWei } from "./shared/utilities";
 
 describe("FizzyMagicToken", async () => {
-  let testContract;
-  let snapshotId;
+  let testContract: FizzyMagicToken;
+  let snapshotId: any;
+  let owner: SignerWithAddress;
+  let toAddr: SignerWithAddress;
+  let invidAddr: SignerWithAddress;
+
   const initSupply = toWei(10 ** 9).toString();
   const maxSupply = toWei(15 * 10 ** 8).toString();
   const addSupply = toWei(3 * 10 ** 8).toString();
   const passSupply = toWei(13 * 10 ** 8).toString();
-
-  const [owner, execAddr, toAddr, invidAddr] = await ethers.getSigners();
-  console.log("owner: ", owner.address);
 
   before(async () => {
     console.log(" ");
@@ -21,9 +24,7 @@ describe("FizzyMagicToken", async () => {
       params: [
         {
           forking: {
-            jsonRpcUrl:
-              process.env.CHAIN_RPC_URL ||
-              `https://data-seed-prebsc-2-s3.binance.org:8545`,
+            jsonRpcUrl: process.env.CHAIN_RPC_URL || `https://data-seed-prebsc-2-s3.binance.org:8545`,
             blockNumber: 15846557,
           },
         },
@@ -32,32 +33,28 @@ describe("FizzyMagicToken", async () => {
     const currentBlock = await network.provider.send("eth_blockNumber", []);
     console.log("current block:", currentBlock.toString(10));
 
-    const TestContract = await ethers.getContractFactory("FizzyMagicToken");
-    testContract = await TestContract.deploy(
-      "Fizzy Magic Token",
-      "FIZZ",
-      maxSupply
-    );
+    [owner, toAddr, invidAddr] = await ethers.getSigners();
+    console.log("owner: ", owner.address);
 
+    const TestContract = await ethers.getContractFactory("FizzyMagicToken");
+    testContract = await TestContract.deploy(maxSupply);
     await testContract.deployed();
-    const cap = await testContract.maxSupply();
     console.log("deployer address:", testContract.deployTransaction.from);
-    console.log("max supply:", cap);
 
     snapshotId = await ethers.provider.send("evm_snapshot", []);
     console.log("snapshot id:", snapshotId);
   });
 
   // afterEach(async () => {
-  //     let currentBlock = await network.provider.send('eth_blockNumber', []);
-  //     console.log('current block before:', currentBlock);
+  //   let currentBlock = await network.provider.send("eth_blockNumber", []);
+  //   console.log("current block before:", currentBlock);
 
-  //     await network.provider.send('evm_revert', [snapshotId]);
-  //     snapshotId = await ethers.provider.send('evm_snapshot', []);
-  //     console.log('snapshot id:', snapshotId);
+  //   await network.provider.send("evm_revert", [snapshotId]);
+  //   snapshotId = await ethers.provider.send("evm_snapshot", []);
+  //   console.log("snapshot id:", snapshotId);
 
-  //     currentBlock = await network.provider.send('eth_blockNumber', []);
-  //     console.log('current block after:', currentBlock);
+  //   currentBlock = await network.provider.send("eth_blockNumber", []);
+  //   console.log("current block after:", currentBlock);
   // });
 
   it("Should return its name", async () => {
@@ -69,9 +66,7 @@ describe("FizzyMagicToken", async () => {
 
   it("Should mint failed from invalid address", async () => {
     console.log(" ");
-    await expect(
-      testContract.connect(invidAddr).mint(owner.address, initSupply)
-    ).to.be.revertedWith("Ownable: caller is not the owner");
+    await expect(testContract.connect(invidAddr).mint(owner.address, initSupply)).to.be.revertedWith("Ownable: caller is not the owner");
 
     const totalSupply = await testContract.totalSupply();
     expect(totalSupply).to.equal(0);
@@ -110,9 +105,7 @@ describe("FizzyMagicToken", async () => {
 
   it("Should mint failed from over max supply", async () => {
     console.log(" ");
-    await expect(
-      testContract.connect(owner).mint(owner.address, addSupply)
-    ).to.be.revertedWith("ERC20: cap exceeded");
+    await expect(testContract.connect(owner).mint(owner.address, addSupply)).to.be.revertedWith("ERC20: cap exceeded");
 
     const totalSupply = await testContract.totalSupply();
     expect(totalSupply).to.equal(passSupply);
@@ -137,7 +130,7 @@ describe("FizzyMagicToken", async () => {
     console.log("balanceFrom after: ", balanceFrom);
     expect(balanceFrom).to.equal(endAmount);
 
-    let balanceTo = await testContract.balanceOf(toAddr.address);
+    const balanceTo = await testContract.balanceOf(toAddr.address);
     console.log("balanceTo: ", balanceTo);
     expect(balanceTo).to.equal(amount);
   });
@@ -154,8 +147,7 @@ describe("FizzyMagicToken", async () => {
     let balanceTo = await testContract.balanceOf(toAddr.address);
     console.log("balanceTo before: ", balanceTo);
 
-    await expect(testContract.connect(toAddr).transfer(owner.address, amount))
-      .to.be.reverted;
+    await expect(testContract.connect(toAddr).transfer(owner.address, amount)).to.be.reverted;
 
     balanceFrom = await testContract.balanceOf(owner.address);
     console.log("balanceFrom after: ", balanceFrom);

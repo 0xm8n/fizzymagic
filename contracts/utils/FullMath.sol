@@ -2,12 +2,10 @@
 pragma solidity ^0.8.9;
 
 // taken from https://medium.com/coinmonks/math-in-solidity-part-3-percents-and-proportions-4db014e080b1
-// license is CC-BY-4.0
-library FullMath {
-    uint256 private constant MAX_UINT256 = (2**256) - 1;
 
+library FullMath {
     function fullMul(uint256 x, uint256 y) internal pure returns (uint256 l, uint256 h) {
-        uint256 mm = mulmod(x, y, MAX_UINT256);
+        uint256 mm = mulmod(x, y, type(uint256).max);
         l = x * y;
         h = mm - l;
         if (mm < l) h -= 1;

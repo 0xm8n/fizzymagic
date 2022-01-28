@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
-import "./interfaces/IFizzyFactory.sol";
+import "../interfaces/IFizzyFactory.sol";
 import "./FizzyPair.sol";
 
 contract FizzyFactory is IFizzyFactory {
@@ -16,7 +16,7 @@ contract FizzyFactory is IFizzyFactory {
         feeToSetter = _feeToSetter;
     }
 
-    function allPairsLength() external view returns (uint) {
+    function allPairsLength() external view returns (uint256) {
         return allPairs.length;
     }
 

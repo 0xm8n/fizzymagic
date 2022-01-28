@@ -1,18 +1,14 @@
-/* eslint-disable node/no-missing-import */
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { expect } from "chai";
-import { ethers, network } from "hardhat";
-import { FizzyTradeToken } from "../typechain";
-import { toWei } from "./shared/utilities";
+const { expect } = require("chai");
+const { ethers, network } = require("ethers");
+const { toWei } = require("../../test/shared/utilities");
 
-describe("FizzyTradeToken", function () {
-  let testContract: FizzyTradeToken;
-  let snapshotId: any;
+describe("FizzyMoneyToken", async () => {
+  let testContract;
+  let snapshotId;
   const initSupply = toWei(10 ** 9);
-  let owner: SignerWithAddress;
-  let execAddr: SignerWithAddress;
-  let toAddr: SignerWithAddress;
-  let invidAddr: SignerWithAddress;
+
+  const [owner, execAddr, toAddr, invidAddr] = await ethers.getSigners();
+  console.log("owner: ", owner.address);
 
   before(async () => {
     console.log(" ");
@@ -21,7 +17,9 @@ describe("FizzyTradeToken", function () {
       params: [
         {
           forking: {
-            jsonRpcUrl: process.env.CHAIN_RPC_URL || `https://data-seed-prebsc-2-s3.binance.org:8545`,
+            jsonRpcUrl:
+              process.env.CHAIN_RPC_URL ||
+              `https://data-seed-prebsc-2-s3.binance.org:8545`,
             blockNumber: 15846557,
           },
         },
@@ -30,11 +28,12 @@ describe("FizzyTradeToken", function () {
     const currentBlock = await network.provider.send("eth_blockNumber", []);
     console.log("current block:", currentBlock.toString(10));
 
-    [owner, execAddr, toAddr, invidAddr] = await ethers.getSigners();
-    console.log("owner: ", owner.address);
-
-    const TestContract = await ethers.getContractFactory("FizzyTradeToken");
-    testContract = await TestContract.deploy("Fizzy Trade Token", "FIZT", execAddr.address);
+    const TestContract = await ethers.getContractFactory("FizzyMoneyToken");
+    testContract = await TestContract.deploy(
+      "FizzyMoneyToken",
+      "FZM",
+      execAddr.address
+    );
     await testContract.deployed();
     console.log("deployer address:", testContract.deployTransaction.from);
 
@@ -43,29 +42,29 @@ describe("FizzyTradeToken", function () {
   });
 
   // afterEach(async () => {
-  //   let currentBlock = await network.provider.send("eth_blockNumber", []);
-  //   console.log("current block before:", currentBlock);
+  //     let currentBlock = await network.provider.send('eth_blockNumber', []);
+  //     console.log('current block before:', currentBlock);
 
-  //   await network.provider.send("evm_revert", [snapshotId]);
-  //   snapshotId = await ethers.provider.send("evm_snapshot", []);
-  //   console.log("snapshot id:", snapshotId);
+  //     await network.provider.send('evm_revert', [snapshotId]);
+  //     snapshotId = await ethers.provider.send('evm_snapshot', []);
+  //     console.log('snapshot id:', snapshotId);
 
-  //   currentBlock = await network.provider.send("eth_blockNumber", []);
-  //   console.log("current block after:", currentBlock);
+  //     currentBlock = await network.provider.send('eth_blockNumber', []);
+  //     console.log('current block after:', currentBlock);
   // });
 
-  it("Should return its name", async function () {
+  it("Should return its name", async () => {
     console.log(" ");
     const contractName = await testContract.name();
     console.log("contract name: ", contractName);
-    expect(contractName).to.equal("Fizzy Trade Token");
+    expect(contractName).to.equal("FizzyMoneyToken");
   });
 
   it("Should mint failed from invalid address", async () => {
     console.log(" ");
-    await expect(testContract.connect(invidAddr).mint(owner.address, initSupply)).to.be.revertedWith(
-      "AccessControl: caller is not the executor"
-    );
+    await expect(
+      testContract.connect(invidAddr).mint(owner.address, initSupply)
+    ).to.be.revertedWith("AccessControl: caller is not the executor");
 
     const totalSupply = await testContract.totalSupply();
     expect(totalSupply).to.equal(0);
@@ -90,13 +89,14 @@ describe("FizzyTradeToken", function () {
 
   it("Should transfer failed from amount exceeded balance", async () => {
     console.log(" ");
-    const amount = toWei(1000);
-    const endAmount = toWei(0);
+    const amount = "1000";
+    const endAmount = "0";
 
     let balanceFrom = await testContract.balanceOf(toAddr.address);
     console.log("balanceFrom before : ", balanceFrom);
 
-    await expect(testContract.connect(toAddr).transfer(owner.address, amount)).to.be.reverted;
+    await expect(testContract.connect(toAddr).transfer(owner.address, amount))
+      .to.be.reverted;
 
     balanceFrom = await testContract.balanceOf(toAddr.address);
     console.log("balanceFrom after: ", balanceFrom);
@@ -109,8 +109,8 @@ describe("FizzyTradeToken", function () {
 
   it("Should transfer success", async () => {
     console.log(" ");
-    const amount = toWei(1000);
-    const endAmount = toWei(10 ** 9 - 1000);
+    const amount = "1000";
+    const endAmount = "999999999999999999999999000";
 
     let balanceFrom = await testContract.balanceOf(owner.address);
     console.log("balanceFrom before : ", balanceFrom);
@@ -128,8 +128,8 @@ describe("FizzyTradeToken", function () {
 
   it("Should burn failed from amount exceeded balance", async () => {
     console.log(" ");
-    const amount = toWei(2000);
-    const endAmount = toWei(1000);
+    const amount = "2000";
+    const endAmount = "1000";
 
     let balanceFrom = await testContract.balanceOf(toAddr.address);
     console.log("balance before : ", balanceFrom);
@@ -143,8 +143,8 @@ describe("FizzyTradeToken", function () {
 
   it("Should burn success", async () => {
     console.log(" ");
-    const amount = toWei(1000);
-    const endAmount = toWei(10 ** 9 - 2000);
+    const amount = "1000";
+    const endAmount = "999999999999999999999998000";
 
     let balanceFrom = await testContract.balanceOf(owner.address);
     console.log("balance before : ", balanceFrom);
@@ -158,13 +158,14 @@ describe("FizzyTradeToken", function () {
 
   it("Should burnFrom failed from not approve", async () => {
     console.log(" ");
-    const amount = toWei(200);
-    const endAmount = toWei(1000);
+    const amount = "200";
+    const endAmount = "1000";
 
     let balanceFrom = await testContract.balanceOf(toAddr.address);
     console.log("balance before : ", balanceFrom);
 
-    await expect(testContract.connect(owner).burnFrom(toAddr.address, amount)).to.be.reverted;
+    await expect(testContract.connect(owner).burnFrom(toAddr.address, amount))
+      .to.be.reverted;
 
     balanceFrom = await testContract.balanceOf(toAddr.address);
     console.log("balance after: ", balanceFrom);
@@ -173,9 +174,9 @@ describe("FizzyTradeToken", function () {
 
   it("Should transferFrom failed from not approve", async () => {
     console.log(" ");
-    const amount = toWei(200);
-    const endAmount = toWei(1000);
-    const ownerAmount = toWei(10 ** 9 - 2000);
+    const amount = "200";
+    const endAmount = "1000";
+    const ownerAmount = "999999999999999999999998000";
 
     let balanceTo = await testContract.balanceOf(owner.address);
     console.log("balanceTo before : ", balanceTo);
@@ -183,7 +184,11 @@ describe("FizzyTradeToken", function () {
     let balanceFrom = await testContract.balanceOf(toAddr.address);
     console.log("balanceFrom before : ", balanceFrom);
 
-    await expect(testContract.connect(owner).transferFrom(toAddr.address, owner.address, amount)).to.be.reverted;
+    await expect(
+      testContract
+        .connect(owner)
+        .transferFrom(toAddr.address, owner.address, amount)
+    ).to.be.reverted;
 
     balanceTo = await testContract.balanceOf(owner.address);
     console.log("balanceTo after: ", balanceTo);
@@ -196,8 +201,8 @@ describe("FizzyTradeToken", function () {
 
   it("Should burnFrom success", async () => {
     console.log(" ");
-    const amount = toWei(200);
-    const endAmount = toWei(800);
+    const amount = "200";
+    const endAmount = "800";
 
     let balanceFrom = await testContract.balanceOf(toAddr.address);
     console.log("balance before : ", balanceFrom);
@@ -212,9 +217,9 @@ describe("FizzyTradeToken", function () {
 
   it("Should transferFrom Success", async () => {
     console.log(" ");
-    const amount = toWei(200);
-    const endAmount = toWei(600);
-    const ownerAmount = toWei(10 ** 9 - 1800);
+    const amount = "200";
+    const endAmount = "600";
+    const ownerAmount = "999999999999999999999998200";
 
     let balanceTo = await testContract.balanceOf(owner.address);
     console.log("balanceTo before : ", balanceTo);
@@ -222,8 +227,10 @@ describe("FizzyTradeToken", function () {
     let balanceFrom = await testContract.balanceOf(toAddr.address);
     console.log("balanceFrom before : ", balanceFrom);
 
-    // await testContract.connect(toAddr).approve(owner.address,initSupply)
-    await testContract.connect(owner).transferFrom(toAddr.address, owner.address, amount);
+    // await testContract.connect(toAddr).approve(owner.address,initSupply);
+    await testContract
+      .connect(owner)
+      .transferFrom(toAddr.address, owner.address, amount);
 
     balanceTo = await testContract.balanceOf(owner.address);
     console.log("balanceTo after: ", balanceTo);

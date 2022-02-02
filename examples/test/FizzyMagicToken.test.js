@@ -137,7 +137,7 @@ describe("FizzyMagicToken", async () => {
     console.log("balanceFrom after: ", balanceFrom);
     expect(balanceFrom).to.equal(endAmount);
 
-    let balanceTo = await testContract.balanceOf(toAddr.address);
+    const balanceTo = await testContract.balanceOf(toAddr.address);
     console.log("balanceTo: ", balanceTo);
     expect(balanceTo).to.equal(amount);
   });

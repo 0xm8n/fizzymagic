@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-interface IFizzyCallee {
+interface IUniswapV2Callee {
     function fizzyCall(
         address sender,
         uint256 amount0,

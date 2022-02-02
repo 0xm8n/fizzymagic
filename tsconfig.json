@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "types": [
-      "node",
-      "mocha",
-    ],
+    "types": ["node", "mocha"],
     "target": "es2018",
     "module": "commonjs",
     "strict": true,
@@ -11,6 +8,12 @@
     "outDir": "dist",
     "declaration": true
   },
-  "include": ["./scripts", "./test", "./typechain", "example/test/index.ts", "example/scripts/deploy.ts"],
+  "include": [
+    "./scripts",
+    "./test",
+    "./typechain",
+    "example/test/index.ts",
+    "example/scripts/deploy.ts"
+  ],
   "files": ["./hardhat.config.ts"]
 }

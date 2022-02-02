@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-interface IFizzyRouter01 {
+interface IUniswapV2Router01 {
     function factory() external view returns (address);
 
     function WETH() external view returns (address);

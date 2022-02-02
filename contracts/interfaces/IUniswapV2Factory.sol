@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-interface IFizzyFactory {
+interface IUniswapV2Factory {
     event PairCreated(address indexed token0, address indexed token1, address pair, uint256);
 
     function feeTo() external view returns (address);

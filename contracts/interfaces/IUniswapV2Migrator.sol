@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-interface IFizzyMigrator {
+interface IUniswapV2Migrator {
     function migrate(
         address token,
         uint256 amountTokenMin,

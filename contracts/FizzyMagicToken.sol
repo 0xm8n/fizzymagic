@@ -10,9 +10,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title Fizzy Magic
 
 contract FizzyMagicToken is Ownable, ERC20 {
+    uint256 public _maxSupply;
 
-    uint public _maxSupply;
-    
     constructor(uint256 cap) ERC20("Fizzy Magic Token", "FIZ") {
         require(cap > 0, "ERC20: cap is 0");
         _maxSupply = cap;
@@ -24,7 +23,7 @@ contract FizzyMagicToken is Ownable, ERC20 {
 
     function mint(address to, uint256 amount) public onlyOwner {
         require(ERC20.totalSupply() + amount <= maxSupply(), "ERC20: cap exceeded");
-        _mint(to,amount);
+        _mint(to, amount);
     }
 
     function burn(uint256 amount) public {

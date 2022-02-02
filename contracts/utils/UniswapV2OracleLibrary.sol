@@ -2,11 +2,11 @@
 pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
-import "../interfaces/IFizzyPair.sol";
+import "../interfaces/IUniswapV2Pair.sol";
 import "./FixedPoint.sol";
 
 // library with helper methods for oracles that are concerned with computing average prices
-library FizzyOracleLibrary {
+library UniswapV2OracleLibrary {
     using FixedPoint for *;
 
     // helper function that returns the current block timestamp within the range of uint32, i.e. [0, 2**32 - 1]
@@ -25,11 +25,11 @@ library FizzyOracleLibrary {
         )
     {
         blockTimestamp = currentBlockTimestamp();
-        price0Cumulative = IFizzyPair(pair).price0CumulativeLast();
-        price1Cumulative = IFizzyPair(pair).price1CumulativeLast();
+        price0Cumulative = IUniswapV2Pair(pair).price0CumulativeLast();
+        price1Cumulative = IUniswapV2Pair(pair).price1CumulativeLast();
 
         // if time has elapsed since the last update on the pair, mock the accumulated price values
-        (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = IFizzyPair(pair).getReserves();
+        (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = IUniswapV2Pair(pair).getReserves();
         if (blockTimestampLast != blockTimestamp) {
             // subtraction overflow is desired
             uint32 timeElapsed = blockTimestamp - blockTimestampLast;

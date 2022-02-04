@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Fizzy Magic
+// Kswzy Magic
 
 pragma solidity ^0.8.9;
 
@@ -7,12 +7,12 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title Fizzy Magic
+/// @title Kswzy Magic
 
-contract FizzyMagicToken is Ownable, ERC20 {
+contract KswzyMagicToken is Ownable, ERC20 {
     uint256 public _maxSupply;
 
-    constructor(uint256 cap) ERC20("Fizzy Magic Token", "FIZ") {
+    constructor(uint256 cap) ERC20("Kswzy Magic Token", "FIZ") {
         require(cap > 0, "ERC20: cap is 0");
         _maxSupply = cap;
     }

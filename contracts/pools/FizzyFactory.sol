@@ -2,10 +2,10 @@
 pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
-import "../interfaces/IFizzyFactory.sol";
-import "./FizzyPair.sol";
+import "../interfaces/IKswzyFactory.sol";
+import "./KswzyPair.sol";
 
-contract FizzyFactory is IFizzyFactory {
+contract KswzyFactory is IKswzyFactory {
     address public feeTo;
     address public feeToSetter;
 
@@ -25,12 +25,12 @@ contract FizzyFactory is IFizzyFactory {
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0), "ERC20: ZERO_ADDRESS");
         require(getPair[token0][token1] == address(0), "ERC20: PAIR_EXISTS"); // single check is sufficient
-        bytes memory bytecode = type(FizzyPair).creationCode;
+        bytes memory bytecode = type(KswzyPair).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(token0, token1));
         assembly {
             pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        IFizzyPair(pair).initialize(token0, token1);
+        IKswzyPair(pair).initialize(token0, token1);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair; // populate mapping in the reverse direction
         allPairs.push(pair);

@@ -4,18 +4,18 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../utils/TransferHelper.sol";
-import "../interfaces/IFizzyMigrator.sol";
-import "../interfaces/Old/IOldFizzyFactory.sol";
-import "../interfaces/Old/IOldFizzyExchange.sol";
-import "../interfaces/IFizzyRouter01.sol";
+import "../interfaces/IKswzyMigrator.sol";
+import "../interfaces/Old/IOldKswzyFactory.sol";
+import "../interfaces/Old/IOldKswzyExchange.sol";
+import "../interfaces/IKswzyRouter01.sol";
 
-contract FizzyMigrator is IFizzyMigrator {
-    IOldFizzyFactory immutable factoryV1;
-    IFizzyRouter01 immutable router;
+contract KswzyMigrator is IKswzyMigrator {
+    IOldKswzyFactory immutable factoryV1;
+    IKswzyRouter01 immutable router;
 
     constructor(address _factoryV1, address _router) {
-        factoryV1 = IOldFizzyFactory(_factoryV1);
-        router = IFizzyRouter01(_router);
+        factoryV1 = IOldKswzyFactory(_factoryV1);
+        router = IKswzyRouter01(_router);
     }
 
     // needs to accept ETH from any v1 exchange and the router. ideally this could be enforced, as in the router,
@@ -29,7 +29,7 @@ contract FizzyMigrator is IFizzyMigrator {
         address to,
         uint256 deadline
     ) external override {
-        IOldFizzyExchange exchangeV1 = IOldFizzyExchange(factoryV1.getExchange(token));
+        IOldKswzyExchange exchangeV1 = IOldKswzyExchange(factoryV1.getExchange(token));
         uint256 liquidityV1 = exchangeV1.balanceOf(msg.sender);
         require(exchangeV1.transferFrom(msg.sender, address(this), liquidityV1), "TRANSFER_FROM_FAILED");
         (uint256 amountETHV1, uint256 amountTokenV1) = exchangeV1.removeLiquidity(liquidityV1, 1, 1, type(uint256).max);

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 interface IUniswapV2Callee {
-    function fizzyCall(
+    function kswzyCall(
         address sender,
         uint256 amount0,
         uint256 amount1,

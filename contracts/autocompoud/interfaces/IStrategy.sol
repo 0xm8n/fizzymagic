@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "./IByalanIsland.sol";
-import "./ISailor.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./IBaseStrategy.sol";
+import "./IPerfCollector.sol";
 
-interface IByalan is IByalanIsland, ISailor {
-    function want() external view returns (address);
+interface IStrategy is IBaseStrategy, IPerfCollector {
+    function strategyToken() external view returns (address);
 
     function beforeDeposit() external;
 

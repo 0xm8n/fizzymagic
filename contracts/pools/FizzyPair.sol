@@ -5,11 +5,11 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../utils/Math.sol";
 import "../utils/FixedPoint.sol";
-import "../interfaces/IFizzyPair.sol";
-import "../interfaces/IFizzyFactory.sol";
-import "../interfaces/IFizzyCallee.sol";
+import "../interfaces/IKswzyPair.sol";
+import "../interfaces/IKswzyFactory.sol";
+import "../interfaces/IKswzyCallee.sol";
 
-contract FizzyPair is IFizzyPair, ERC20 {
+contract KswzyPair is IKswzyPair, ERC20 {
     uint256 public constant MINIMUM_LIQUIDITY = 10**3;
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes("transfer(address,uint256)")));
 
@@ -54,7 +54,7 @@ contract FizzyPair is IFizzyPair, ERC20 {
         );
     }
 
-    function totalSupply() public view virtual override(IFizzyPair, ERC20) returns (uint256) {
+    function totalSupply() public view virtual override(IKswzyPair, ERC20) returns (uint256) {
         return ERC20.totalSupply();
     }
 
@@ -62,7 +62,7 @@ contract FizzyPair is IFizzyPair, ERC20 {
         address sender,
         address recipient,
         uint256 amount
-    ) public override(IFizzyPair, ERC20) returns (bool) {
+    ) public override(IKswzyPair, ERC20) returns (bool) {
         _transfer(sender, recipient, amount);
 
         uint256 currentAllowance = ERC20.allowance(sender, _msgSender());
@@ -186,7 +186,7 @@ contract FizzyPair is IFizzyPair, ERC20 {
             require(to != _token0 && to != _token1, "ERC20: INVALID_TO");
             if (amount0Out > 0) _safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
             if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
-            if (data.length > 0) IFizzyCallee(to).fizzyCall(msg.sender, amount0Out, amount1Out, data);
+            if (data.length > 0) IKswzyCallee(to).kswzyCall(msg.sender, amount0Out, amount1Out, data);
             balance0 = IERC20(_token0).balanceOf(address(this));
             balance1 = IERC20(_token1).balanceOf(address(this));
         }
@@ -253,7 +253,7 @@ contract FizzyPair is IFizzyPair, ERC20 {
 
     // if fee is on, mint liquidity equivalent to 1/6th of the growth in sqrt(k)
     function _mintFee(uint112 _reserve0, uint112 _reserve1) private returns (bool feeOn) {
-        address feeTo = IFizzyFactory(factory).feeTo();
+        address feeTo = IKswzyFactory(factory).feeTo();
         feeOn = feeTo != address(0);
         uint256 _kLast = kLast; // gas savings
         if (feeOn) {

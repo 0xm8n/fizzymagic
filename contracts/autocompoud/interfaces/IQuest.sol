@@ -2,11 +2,11 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./IBaseStrategy.sol";
+import "./IQuestBase.sol";
 import "./IPerfCollector.sol";
 
-interface IStrategy is IBaseStrategy, IPerfCollector {
-    function strategyToken() external view returns (address);
+interface IQuest is IQuestBase, IPerfCollector {
+    function questToken() external view returns (address);
 
     function beforeDeposit() external;
 
@@ -26,7 +26,7 @@ interface IStrategy is IBaseStrategy, IPerfCollector {
 
     function harvest() external;
 
-    function retireStrategy() external;
+    function retireQuest() external;
 
     function panic() external;
 

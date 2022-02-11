@@ -4,41 +4,40 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "./interfaces/IBaseStrategy.sol";
+import "./interfaces/IQuestBase.sol";
 import "./interfaces/IGasPrice.sol";
 
-abstract contract BaseStrategy is Ownable, Pausable, IBaseStrategy {
-    address public guild;
+abstract contract QuestBase is Ownable, Pausable, IQuestBase {
+    address public operator;
     address public unirouter;
-    address public override leader;
+    address public override party;
     address public treasuryFeeRecipient;
     address public harvester;
-
     address public gasPrice = 0xc558252b50920a21f4AE3225E1Ed7D250E5D5593;
 
-    event SetGuild(address guild);
+    event SetOperator(address operator);
     event SetRouter(address router);
     event SetTreasuryFeeRecipient(address treasuryFeeRecipient);
     event SetHarvester(address harvester);
     event SetGasPrice(address gasPrice);
 
     constructor(
-        address _guild,
+        address _operator,
         address _unirouter,
-        address _leader,
+        address _party,
         address _treasuryFeeRecipient,
         address _harvester
     ) {
-        guild = _guild;
+        operator = _operator;
         unirouter = _unirouter;
-        leader = _leader;
+        party = _party;
         treasuryFeeRecipient = _treasuryFeeRecipient;
         harvester = _harvester;
     }
 
-    // checks that caller is either owner or guild.
-    modifier onlyGuild() {
-        require(msg.sender == owner() || msg.sender == guild, "!guild");
+    // checks that caller is either owner or operator.
+    modifier onlyOperator() {
+        require(msg.sender == owner() || msg.sender == operator, "!operator");
         _;
     }
 
@@ -48,13 +47,13 @@ abstract contract BaseStrategy is Ownable, Pausable, IBaseStrategy {
         _;
     }
 
-    modifier onlyLeader() {
-        require(msg.sender == leader, "!leader");
+    modifier onlyParty() {
+        require(msg.sender == party, "!party");
         _;
     }
 
-    modifier onlyEOAandLeader() {
-        require(tx.origin == msg.sender || msg.sender == leader, "!contract");
+    modifier onlyEOAandParty() {
+        require(tx.origin == msg.sender || msg.sender == party, "!contract");
         _;
     }
 
@@ -68,9 +67,9 @@ abstract contract BaseStrategy is Ownable, Pausable, IBaseStrategy {
         _;
     }
 
-    function setGuild(address _guild) external onlyGuild {
-        guild = _guild;
-        emit SetGuild(_guild);
+    function setOperator(address _operator) external onlyOperator {
+        operator = _operator;
+        emit SetOperator(_operator);
     }
 
     function setUnirouter(address _unirouter) external onlyOwner {
@@ -78,9 +77,9 @@ abstract contract BaseStrategy is Ownable, Pausable, IBaseStrategy {
         emit SetRouter(_unirouter);
     }
 
-    function setLeader(address _leader) external onlyOwner {
-        require(leader == address(0), "already set");
-        leader = _leader;
+    function setParty(address _party) external onlyOwner {
+        require(party == address(0), "already set");
+        party = _party;
     }
 
     function setTreasuryFeeRecipient(address _treasuryFeeRecipient) external onlyOwner {
@@ -93,7 +92,7 @@ abstract contract BaseStrategy is Ownable, Pausable, IBaseStrategy {
         emit SetHarvester(_harvester);
     }
 
-    function setGasPrice(address _gasPrice) external onlyGuild {
+    function setGasPrice(address _gasPrice) external onlyOperator {
         gasPrice = _gasPrice;
         emit SetGasPrice(_gasPrice);
     }

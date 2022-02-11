@@ -32,12 +32,12 @@ contract WithdrawFee is Ownable, IWithdrawFee {
         treasuryFeeRecipient = _treasuryFeeRecipient;
     }
 
-    function calculateWithdrawFee(uint256 _strategyTokenAmount) external view override returns (uint256) {
+    function calculateWithdrawFee(uint256 _questTokenAmount) external view override returns (uint256) {
         if (ignoreFeeBlock == block.number) {
             return 0;
         }
 
-        return (_strategyTokenAmount / maxFee);
+        return (_questTokenAmount / maxFee);
     }
 
     function setWithdrawFee(uint256 _fee) external onlyOwner {

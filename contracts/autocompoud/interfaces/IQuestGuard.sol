@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-interface IFarmGuard {
+interface IQuestGuard {
     function maxAllocation() external view returns (uint16);
 
     function limitAllocation() external view returns (uint16);

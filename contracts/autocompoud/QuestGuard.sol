@@ -4,9 +4,9 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./interfaces/IFarmGuard.sol";
+import "./interfaces/IQuestGuard.sol";
 
-contract FarmGuard is Ownable, IFarmGuard {
+contract QuestGuard is Ownable, IQuestGuard {
 
     uint16 public constant override maxAllocation = 10000;
     uint16 public override limitAllocation;

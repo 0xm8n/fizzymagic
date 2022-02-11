@@ -11,35 +11,35 @@ interface IReserveWithdrawer {
     function reserve() external returns (address);
 }
 
-contract PartyReserve is Ownable {
+contract GuildReserve is Ownable {
     using SafeERC20 for IERC20;
 
-    IERC20 public immutable rewardToken;
-    address public party;
+    IERC20 public immutable questReward;
+    address public guild;
 
     uint256 public balances;
 
     event Deposit(address from, uint256 amount);
 
-    constructor(IERC20 _rewardToken) {
-        rewardToken = _rewardToken;
+    constructor(IERC20 _questReward) {
+        questReward = _questReward;
     }
 
-    function setParty(address _party) external onlyOwner {
-        require(party == address(0), "?");
-        require(IReserveWithdrawer(_party).reserve() == address(this), "invalid party");
+    function setGuild(address _guild) external onlyOwner {
+        require(guild == address(0), "?");
+        require(IReserveWithdrawer(_guild).reserve() == address(this), "invalid guild");
 
-        party = _party;
+        guild = _guild;
     }
 
     function withdraw(address to, uint256 amount) external returns (uint256) {
-        require(msg.sender == party, "!withdrawer");
+        require(msg.sender == guild, "!withdrawer");
 
         return _safeTransfer(to, amount);
     }
 
     function deposit(uint256 amount) external {
-        rewardToken.safeTransferFrom(msg.sender, address(this), amount);
+        questReward.safeTransferFrom(msg.sender, address(this), amount);
         balances += amount;
         emit Deposit(msg.sender, amount);
     }
@@ -48,7 +48,7 @@ contract PartyReserve is Ownable {
         amount = Math.min(amount, balances);
         if (amount > 0) {
             balances -= amount;
-            rewardToken.safeTransfer(to, amount);
+            questReward.safeTransfer(to, amount);
         }
 
         return amount;

@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-interface IPCSMasterChef {
+interface IPcsMasterChef {
     struct UserInfo {
         uint256 amount;
         uint256 rewardDebt;

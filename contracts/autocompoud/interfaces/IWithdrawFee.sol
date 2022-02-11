@@ -10,7 +10,7 @@ interface IWithdrawFee {
 
     function treasuryFeeWithdraw() external view returns (uint256);
 
-    function calculateWithdrawFee(uint256 _strategyTokenAmount) external view returns (uint256);
+    function calculateWithdrawFee(uint256 _questTokenAmount) external view returns (uint256);
 
     function distributeWithdrawFee(IERC20 _token) external;
 

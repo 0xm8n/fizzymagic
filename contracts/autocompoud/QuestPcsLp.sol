@@ -7,13 +7,13 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./PerfCollector.sol";
-import "./BaseStrategy.sol";
-import "./interfaces/IStrategy.sol";
-import "./interfaces/IPCSMasterChef.sol";
+import "./QuestBase.sol";
+import "./interfaces/IQuest.sol";
+import "./interfaces/IPcsMasterChef.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IUniswapV2Router02.sol";
 
-contract PCSStrategyLP is BaseStrategy, PerfCollector, IStrategy {
+contract QuestPcsLp is QuestBase, PerfCollector, IQuest {
     using SafeERC20 for IERC20;
     using Address for address payable;
 
@@ -21,11 +21,11 @@ contract PCSStrategyLP is BaseStrategy, PerfCollector, IStrategy {
     address public constant WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     address public constant CAKE = 0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82;
     address public constant PCS_ROUTER = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
-    address public immutable override strategyToken;
+    address public immutable override questToken;
     address public immutable lpToken0;
     address public immutable lpToken1;
 
-    // Third party contracts
+    // Third guild contracts
     address public constant MASTERCHEF = 0x73feaa1eE314F8c655E354234017bE2193C9E24E;
     uint256 public immutable pid;
 
@@ -37,19 +37,19 @@ contract PCSStrategyLP is BaseStrategy, PerfCollector, IStrategy {
     event Harvest(address indexed harvester);
 
     constructor(
-        address _guild,
-        address _leader,
+        address _operator,
+        address _party,
         address _treasuryFeeRecipient,
         address _harvester,
         uint256 _pid,
         address[] memory _cakeToLp0Route,
         address[] memory _cakeToLp1Route
-    ) BaseStrategy(_guild, PCS_ROUTER, _leader, _treasuryFeeRecipient, _harvester) {
+    ) QuestBase(_operator, PCS_ROUTER, _party, _treasuryFeeRecipient, _harvester) {
         pid = _pid;
 
-        strategyToken = IPCSMasterChef(MASTERCHEF).poolInfo(_pid).lpToken;
-        lpToken0 = IUniswapV2Pair(strategyToken).token0();
-        lpToken1 = IUniswapV2Pair(strategyToken).token1();
+        questToken = IPcsMasterChef(MASTERCHEF).poolInfo(_pid).lpToken;
+        lpToken0 = IUniswapV2Pair(questToken).token0();
+        lpToken1 = IUniswapV2Pair(questToken).token1();
 
         cakeToWbnbRoute = [CAKE, WBNB];
         if (lpToken0 != CAKE) {
@@ -82,31 +82,31 @@ contract PCSStrategyLP is BaseStrategy, PerfCollector, IStrategy {
 
     // puts the funds to work
     function deposit() public override whenNotPaused {
-        uint256 strategyTokenBal = IERC20(strategyToken).balanceOf(address(this));
+        uint256 questTokenBal = IERC20(questToken).balanceOf(address(this));
 
-        if (strategyTokenBal > 0) {
-            IPCSMasterChef(MASTERCHEF).deposit(pid, strategyTokenBal);
+        if (questTokenBal > 0) {
+            IPcsMasterChef(MASTERCHEF).deposit(pid, questTokenBal);
         }
     }
 
-    function withdraw(uint256 _amount) external override onlyLeader {
-        uint256 strategyTokenBal = IERC20(strategyToken).balanceOf(address(this));
+    function withdraw(uint256 _amount) external override onlyParty {
+        uint256 questTokenBal = IERC20(questToken).balanceOf(address(this));
 
-        if (strategyTokenBal < _amount) {
-            IPCSMasterChef(MASTERCHEF).withdraw(pid, _amount - strategyTokenBal);
-            strategyTokenBal = IERC20(strategyToken).balanceOf(address(this));
+        if (questTokenBal < _amount) {
+            IPcsMasterChef(MASTERCHEF).withdraw(pid, _amount - questTokenBal);
+            questTokenBal = IERC20(questToken).balanceOf(address(this));
         }
 
-        if (strategyTokenBal > _amount) {
-            strategyTokenBal = _amount;
+        if (questTokenBal > _amount) {
+            questTokenBal = _amount;
         }
 
-        IERC20(strategyToken).safeTransfer(leader, strategyTokenBal);
+        IERC20(questToken).safeTransfer(party, questTokenBal);
     }
 
     // compounds earnings and charges performance fee
     function harvest() external override whenNotPaused onlyEOA onlyHarvester gasThrottle {
-        IPCSMasterChef(MASTERCHEF).deposit(pid, 0);
+        IPcsMasterChef(MASTERCHEF).deposit(pid, 0);
         chargeFees();
         addLiquidity();
         deposit();
@@ -152,53 +152,53 @@ contract PCSStrategyLP is BaseStrategy, PerfCollector, IStrategy {
         );
     }
 
-    // calculate the total underlaying 'strategyToken' held by the strat.
+    // calculate the total underlaying 'questToken' held by the strat.
     function balanceOf() external view override returns (uint256) {
         return balanceOfWant() + balanceOfPool();
     }
 
-    // it calculates how much 'strategyToken' this contract holds.
+    // it calculates how much 'questToken' this contract holds.
     function balanceOfWant() public view override returns (uint256) {
-        return IERC20(strategyToken).balanceOf(address(this));
+        return IERC20(questToken).balanceOf(address(this));
     }
 
-    // it calculates how much 'strategyToken' the strategy has working in the farm.
+    // it calculates how much 'questToken' the quest has working in the farm.
     function balanceOfPool() public view override returns (uint256) {
-        return IPCSMasterChef(MASTERCHEF).userInfo(pid, address(this)).amount;
+        return IPcsMasterChef(MASTERCHEF).userInfo(pid, address(this)).amount;
     }
 
     function balanceOfMasterChef() external view override returns (uint256) {
-        return IERC20(strategyToken).balanceOf(MASTERCHEF);
+        return IERC20(questToken).balanceOf(MASTERCHEF);
     }
 
     function pendingRewardTokens() external view override returns (IERC20[] memory rewardTokens, uint256[] memory rewardAmounts) {
         rewardTokens = new IERC20[](1);
         rewardAmounts = new uint256[](1);
         rewardTokens[0] = IERC20(CAKE);
-        rewardAmounts[0] = IPCSMasterChef(MASTERCHEF).pendingCake(pid, address(this)) + IERC20(CAKE).balanceOf(address(this));
+        rewardAmounts[0] = IPcsMasterChef(MASTERCHEF).pendingCake(pid, address(this)) + IERC20(CAKE).balanceOf(address(this));
     }
 
-    // called as part of strategy migration. Sends all the available funds back to the vault.
-    function retireStrategy() external override onlyLeader {
-        IPCSMasterChef(MASTERCHEF).emergencyWithdraw(pid);
+    // called as part of quest migration. Sends all the available funds back to the vault.
+    function retireQuest() external override onlyParty {
+        IPcsMasterChef(MASTERCHEF).emergencyWithdraw(pid);
 
-        uint256 strategyTokenBal = IERC20(strategyToken).balanceOf(address(this));
-        IERC20(strategyToken).transfer(leader, strategyTokenBal);
+        uint256 questTokenBal = IERC20(questToken).balanceOf(address(this));
+        IERC20(questToken).transfer(party, questTokenBal);
     }
 
-    // pauses deposits and withdraws all funds from third party systems.
-    function panic() external override onlyGuild {
+    // pauses deposits and withdraws all funds from third guild systems.
+    function panic() external override onlyOperator {
         pause();
-        IPCSMasterChef(MASTERCHEF).emergencyWithdraw(pid);
+        IPcsMasterChef(MASTERCHEF).emergencyWithdraw(pid);
     }
 
-    function pause() public override onlyGuild {
+    function pause() public override onlyOperator {
         _pause();
 
         _removeAllowances();
     }
 
-    function unpause() external override onlyGuild {
+    function unpause() external override onlyOperator {
         _unpause();
 
         _giveAllowances();
@@ -206,12 +206,12 @@ contract PCSStrategyLP is BaseStrategy, PerfCollector, IStrategy {
         deposit();
     }
 
-    function paused() public view override(IStrategy, Pausable) returns (bool) {
+    function paused() public view override(IQuest, Pausable) returns (bool) {
         return super.paused();
     }
 
     function _giveAllowances() internal {
-        IERC20(strategyToken).safeApprove(MASTERCHEF, type(uint256).max);
+        IERC20(questToken).safeApprove(MASTERCHEF, type(uint256).max);
         IERC20(CAKE).safeApprove(unirouter, type(uint256).max);
 
         // lp token 0 and 1 maybe cake so approve 0 is needed here
@@ -223,7 +223,7 @@ contract PCSStrategyLP is BaseStrategy, PerfCollector, IStrategy {
     }
 
     function _removeAllowances() internal {
-        IERC20(strategyToken).safeApprove(MASTERCHEF, 0);
+        IERC20(questToken).safeApprove(MASTERCHEF, 0);
         IERC20(CAKE).safeApprove(unirouter, 0);
         IERC20(lpToken0).safeApprove(unirouter, 0);
         IERC20(lpToken1).safeApprove(unirouter, 0);

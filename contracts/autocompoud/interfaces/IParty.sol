@@ -2,14 +2,14 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./IStrategy.sol";
+import "./IQuest.sol";
 
-interface ILeader {
+interface IParty {
     function totalSupply() external view returns (uint256);
 
-    function party() external view returns (address);
+    function guild() external view returns (address);
 
-    function strategyToken() external view returns (IERC20);
+    function questToken() external view returns (IERC20);
 
     function deposit(address user, uint256 amount) external returns (uint256 loot);
 
@@ -17,7 +17,7 @@ interface ILeader {
 
     function balance() external view returns (uint256);
 
-    function strategy() external view returns (IStrategy);
+    function quest() external view returns (IQuest);
 
     function feeWithdraw() external view returns (address);
 

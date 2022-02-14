@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./interfaces/IGuildReserve.sol";
 import "./interfaces/IParty.sol";
-// import "../interfaces/IWETH.sol";
+import "../interfaces/IWETH.sol";
 import "../utils/Math.sol";
 
 contract Guild is Ownable, ReentrancyGuard {
@@ -18,23 +18,34 @@ contract Guild is Ownable, ReentrancyGuard {
     using Address for address;
     using Address for address payable;
     
-    IWETH public constant WETH = IWETH(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c);
+    IWETH public immutable WETH; // = IWETH(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c);
     IERC20 public immutable FZM;
 
     // Info of each user.
     struct UserInfo {
+        // share in the quest
         uint256 share;
+        uint256 deposit;
+        uint256 borrow;
         // uint256 rewardDebt;
-        uint256 storedShare;
+        // total yield from the quest
+        uint256 shareYield;
     }
 
     // Info of each pool.
-    struct PoolInfo {
+    struct QuestInfo {
+        // Reward token from LP farm
         IERC20 questToken;
-        address party;
+        // address of Quest contract
+        address quest;
+        // Current un-compound reward
         uint256 questReward;
         // uint64 allocPoint;
+        // timestamp of last compound
         uint64 lastCompoud;
+        uint64 interestRate;
+        uint64 perfFee;
+        uint64 liquidateFee;
     }
 
     // Reserve
@@ -46,23 +57,23 @@ contract Guild is Ownable, ReentrancyGuard {
     // uint256 public rewardTokenPerSecond;
 
     // Info of each pool.
-    address[] public traversalPools;
-    mapping(address => bool) public isInTraversalPools; // remember is party in traversal
-    mapping(address => PoolInfo) public poolInfo;
+    // address[] public traversalPools;
+    // mapping(address => bool) public isInTraversalPools; // remember is party in traversal
+    mapping(address => QuestInfo) public questInfo;
     uint256 public totalPool;
     // Total allocation points. Must be the sum of all allocation points in all pools.
-    uint256 public totalAllocPoint;
+    // uint256 public totalAllocPoint;
 
     // Info of each user that stakes to party.
     mapping(address => mapping(address => UserInfo)) public userInfo;
 
-    // [user] [party] [store] => amount
+    // [user] [quest] [store] => amount
     mapping(address => mapping(address => mapping(address => uint256))) private _storeAllowances;
     mapping(address => mapping(address => mapping(address => uint256))) public shareStorage;
 
     // Juno transportation
-    address public juno;
-    address public junoGuide;
+    // address public juno;
+    // address public junoGuide;
 
     event Deposit(address indexed user, address indexed party, uint256 amount);
     event DepositFor(address indexed user, address indexed party, uint256 amount);
@@ -81,8 +92,8 @@ contract Guild is Ownable, ReentrancyGuard {
     event AddPool(address indexed party, uint256 allocPoint, bool withUpdate);
     event SetPool(address indexed party, uint256 allocPoint, bool withUpdate);
     // event SetRewardTokenPerSecond(uint256 rewardTokenPerSecond);
-    event SetJuno(address juno);
-    event SetJunoGuide(address junoGuide);
+    // event SetJuno(address juno);
+    // event SetJunoGuide(address junoGuide);
 
     modifier ensure(uint256 deadline) {
         require(deadline >= block.timestamp, "Guild: EXPIRED");
@@ -92,16 +103,18 @@ contract Guild is Ownable, ReentrancyGuard {
     constructor(
         IGuildReserve _reserve,
         IERC20 _FZM,
+        IWETH _WETH
         // address _rewardToken,
         // uint256 _rewardTokenPerSecond,
-        address _juno,
-        address _junoGuide
+        // address _juno,
+        // address _junoGuide
     ) {
         reserve = _reserve;
         FZM = _FZM;
+        WETH = _WETH;
         // rewardTokenPerSecond = _rewardTokenPerSecond;
-        juno = _juno;
-        junoGuide = _junoGuide;
+        // juno = _juno;
+        // junoGuide = _junoGuide;
         // rewardToken = _rewardToken;
     }
 
@@ -120,7 +133,7 @@ contract Guild is Ownable, ReentrancyGuard {
 
     function removeTraversal(uint256 index) external {
         address party = traversalPools[index];
-        require(poolInfo[party].allocPoint == 0, "allocated");
+        require(questInfo[party].allocPoint == 0, "allocated");
 
         isInTraversalPools[party] = false;
         traversalPools[index] = traversalPools[traversalPools.length - 1];
@@ -135,12 +148,12 @@ contract Guild is Ownable, ReentrancyGuard {
     ) external onlyOwner {
         require(IParty(party).guild() == address(this), "?");
         require(IParty(party).totalSupply() >= 0, "??");
-        require(poolInfo[party].party == address(0), "duplicated");
+        require(questInfo[party].party == address(0), "duplicated");
         if (withUpdate) {
             massUpdatePools();
         }
 
-        poolInfo[party] = PoolInfo({
+        questInfo[party] = QuestInfo({
             questToken: IParty(party).questToken(),
             party: party,
             // allocPoint: allocPoint,
@@ -162,7 +175,7 @@ contract Guild is Ownable, ReentrancyGuard {
         bool withUpdate
     ) external onlyOwner {
         require(party != address(0), "invalid party");
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         require(pool.party == party, "!found");
         if (withUpdate) {
             massUpdatePools();
@@ -181,7 +194,7 @@ contract Guild is Ownable, ReentrancyGuard {
      *
      */
     function pendingRewardToken(address party, address _user) external view returns (uint256) {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         UserInfo storage user = userInfo[party][_user];
         uint256 questReward = pool.questReward;
         uint256 partySupply = IParty(party).totalSupply();
@@ -207,7 +220,7 @@ contract Guild is Ownable, ReentrancyGuard {
 
     Update reward variables of the given pool to be up-to-date.
     function updatePool(address party) public {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         require(pool.party == party, "!pool");
         if (block.timestamp > pool.lastCompoud) {
             uint256 partySupply = IParty(party).totalSupply();
@@ -232,7 +245,7 @@ contract Guild is Ownable, ReentrancyGuard {
         IERC20 questToken,
         uint256 amount
     ) private {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         UserInfo storage user = userInfo[party][_user];
 
         // updatePool(party);
@@ -261,7 +274,7 @@ contract Guild is Ownable, ReentrancyGuard {
     }
 
     function deposit(address party, uint256 amount) external nonReentrant {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         if (amount > 0) {
             require(_safeERC20TransferIn(pool.questToken, amount) == amount, "!amount");
         }
@@ -274,7 +287,7 @@ contract Guild is Ownable, ReentrancyGuard {
         address party,
         uint256 amount
     ) external nonReentrant {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         if (amount > 0) {
             require(_safeERC20TransferIn(pool.questToken, amount) == amount, "!amount");
         }
@@ -291,7 +304,7 @@ contract Guild is Ownable, ReentrancyGuard {
         bytes calldata data
     ) external nonReentrant ensure(deadline) {
         require(tokens.length == tokenAmounts.length, "length mismatch");
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         IERC20 questToken = pool.questToken;
 
         uint256 beforeBal = questToken.balanceOf(address(this));
@@ -316,7 +329,7 @@ contract Guild is Ownable, ReentrancyGuard {
     //     bytes calldata data
     // ) external payable nonReentrant ensure(deadline) {
     //     require(msg.value > 0, "!value");
-    //     PoolInfo storage pool = poolInfo[party];
+    //     QuestInfo storage pool = questInfo[party];
     //     IERC20 questToken = pool.questToken;
 
     //     uint256 beforeBal = questToken.balanceOf(address(this));
@@ -339,7 +352,7 @@ contract Guild is Ownable, ReentrancyGuard {
         IERC20 questToken,
         uint256 shareAmount
     ) private returns (uint256 amount) {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         UserInfo storage user = userInfo[party][_user];
         shareAmount = Math.min(user.share, shareAmount);
 
@@ -362,7 +375,7 @@ contract Guild is Ownable, ReentrancyGuard {
     }
 
     function withdraw(address party, uint256 shareAmount) external nonReentrant {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         uint256 amount = _withdraw(msg.sender, party, pool.questToken, shareAmount);
         if (amount > 0) {
             pool.questToken.safeTransfer(msg.sender, amount);
@@ -377,7 +390,7 @@ contract Guild is Ownable, ReentrancyGuard {
         uint256 shareAmount
     ) external nonReentrant {
         require(shareAmount > 0, "invalid amount");
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         UserInfo storage user = userInfo[party][_user];
         shareStorage[_user][party][msg.sender] -= shareAmount;
         user.storedShare -= shareAmount;
@@ -398,7 +411,7 @@ contract Guild is Ownable, ReentrancyGuard {
         uint256 deadline,
         bytes calldata data
     ) external nonReentrant ensure(deadline) {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         IERC20 questToken = pool.questToken;
         require(token != questToken, "!questToken");
         uint256 amount = _withdraw(msg.sender, party, questToken, shareAmount);
@@ -423,7 +436,7 @@ contract Guild is Ownable, ReentrancyGuard {
         uint256 deadline,
         bytes calldata data
     ) external nonReentrant ensure(deadline) {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         uint256 amount = _withdraw(msg.sender, party, pool.questToken, shareAmount);
 
         uint256 beforeBal = WETH.balanceOf(address(this));
@@ -442,7 +455,7 @@ contract Guild is Ownable, ReentrancyGuard {
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw(address party) external {
-        PoolInfo storage pool = poolInfo[party];
+        QuestInfo storage pool = questInfo[party];
         UserInfo storage user = userInfo[party][msg.sender];
 
         uint256 share = user.share;
@@ -562,22 +575,22 @@ contract Guild is Ownable, ReentrancyGuard {
         emit StoreReturnShare(_user, party, msg.sender, amount);
     }
 
-    function setRewardTokenPerSecond(uint256 _rewardTokenPerSecond) external onlyOwner {
-        massUpdatePools();
-        rewardTokenPerSecond = _rewardTokenPerSecond;
-        emit SetRewardTokenPerSecond(_rewardTokenPerSecond);
-    }
+    // function setRewardTokenPerSecond(uint256 _rewardTokenPerSecond) external onlyOwner {
+    //     massUpdatePools();
+    //     rewardTokenPerSecond = _rewardTokenPerSecond;
+    //     emit SetRewardTokenPerSecond(_rewardTokenPerSecond);
+    // }
 
-    function setJuno(address _juno) external {
-        require(msg.sender == junoGuide, "!guide");
-        juno = _juno;
-        emit SetJuno(_juno);
-    }
+    // function setJuno(address _juno) external {
+    //     require(msg.sender == junoGuide, "!guide");
+    //     juno = _juno;
+    //     emit SetJuno(_juno);
+    // }
 
-    function setJunoGuide(address _junoGuide) external onlyOwner {
-        junoGuide = _junoGuide;
-        emit SetJunoGuide(_junoGuide);
-    }
+    // function setJunoGuide(address _junoGuide) external onlyOwner {
+    //     junoGuide = _junoGuide;
+    //     emit SetJunoGuide(_junoGuide);
+    // }
 
     function _safeERC20TransferIn(IERC20 token, uint256 amount) private returns (uint256) {
         require(amount > 0, "zero amount");

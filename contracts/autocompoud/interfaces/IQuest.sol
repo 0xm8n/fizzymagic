@@ -6,7 +6,7 @@ import "./IQuestBase.sol";
 import "./IPerfCollector.sol";
 
 interface IQuest is IQuestBase, IPerfCollector {
-    function questToken() external view returns (address);
+    function questLp() external view returns (address);
 
     function beforeDeposit() external;
 

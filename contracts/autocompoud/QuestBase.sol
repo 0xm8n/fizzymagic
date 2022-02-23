@@ -13,7 +13,7 @@ import "./interfaces/IQuest.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IUniswapV2Router02.sol";
 
-abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
+abstract contract QuestBase is Pausable, PerfCollector, IQuest {
     
     using SafeERC20 for IERC20;
     using Address for address payable;
@@ -22,9 +22,12 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
     address public guild;
     address public guildReserve;
     address public executor;
+    address public operator;
     
     uint256 public immutable pid;
+    address public immutable masterchef;
     address public immutable override questLp;
+    address public immutable rwToken;
     address public immutable lpToken0;
     address public immutable lpToken1;
 
@@ -43,6 +46,7 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
     event SetRouter(address router);
     event SetGuildReserve(address guildReserve);
     event SetExecutor(address executor);
+    event SetOperator(address operator);
     event SetGasPrice(address gasPrice);
     event Compound(address indexed compound);
 
@@ -51,7 +55,9 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
         address _guild,
         address _guildReserve,
         address _executor,
+        address _operator,
         address _masterchef,
+        address _questLp,
         uint256 _pid,
         address _rwToken,
         address[] _rwTokenToLp0Route,
@@ -61,14 +67,19 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
         guild = _guild;
         guildReserve = _guildReserve;
         executor = _executor;
+        operator = _operator;
         pid = _pid;
-        questLp = IPcsMasterChef(_masterchef).poolInfo(_pid).lpToken;
+        masterchef = _masterchef;
+        rwToken = _rwToken;
+        questLp = _questLp;
         lpToken0 = IUniswapV2Pair(questLp).token0();
         lpToken1 = IUniswapV2Pair(questLp).token1();
 
-        rwTokenToWbnbRoute = [_rwToken, Wbnb];
-        if (lpToken0 != _rwToken) {
-            require(_rwTokenToLp0Route[0] == _rwToken, "invalid lp 0 route");
+        rwTokenToWbnbRoute = [rwToken, WBNB];
+        fzmToLp0Route = [FZM, lpToken0];
+        fzmToLp1Route = [FZM, lpToken1];
+        if (lpToken0 != rwToken) {
+            require(_rwTokenToLp0Route[0] == rwToken, "invalid lp 0 route");
             require(_rwTokenToLp0Route[_rwTokenToLp0Route.length - 1] == lpToken0, "invalid lp 0 route");
             require(
                 IUniswapV2Router02(router).getAmountsOut(1 ether, _rwTokenToLp0Route)[_rwTokenToLp0Route.length - 1] > 0,
@@ -77,8 +88,8 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
             rwTokenToLp0Route = _rwTokenToLp0Route;
         }
 
-        if (lpToken1 != _rwToken) {
-            require(_rwTokenToLp1Route[0] == _rwToken, "invalid lp 1 route");
+        if (lpToken1 != rwToken) {
+            require(_rwTokenToLp1Route[0] == rwToken, "invalid lp 1 route");
             require(_rwTokenToLp1Route[_rwTokenToLp1Route.length - 1] == lpToken1, "invalid lp 1 route");
             require(
                 IUniswapV2Router02(router).getAmountsOut(1 ether, _rwTokenToLp1Route)[_rwTokenToLp1Route.length - 1] > 0,
@@ -107,7 +118,12 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
     }
 
     modifier onlyExecutor() {
-        require(executor == address(0) || msg.sender == executor, "!executor");
+        require(msg.sender == executor, "!executor");
+        _;
+    }
+
+    modifier onlyOperator() {
+        require(msg.sender == operator, "!operator");
         _;
     }
 
@@ -136,6 +152,11 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
         emit SetExecutor(_executor);
     }
 
+    function setOperator(address _operator) external onlyOwner {
+        operator = _operator;
+        emit SetOperator(operator);
+    }
+
     function setGasPrice(address _gasPrice) external onlyOwner {
         gasPrice = _gasPrice;
         emit SetGasPrice(_gasPrice);
@@ -143,8 +164,8 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
 
     // performance fees
     function chargeFees() internal {
-        uint256 toBnb = (IERC20(CAKE).balanceOf(address(this)) * perfFee) / maxPerfFee;
-        IUniswapV2Router02(router).swapExactTokensForETH(toBnb, 0, cakeToWbnbRoute, address(this), block.timestamp);
+        uint256 toBnb = (IERC20(rwToken).balanceOf(address(this)) * perfFee) / maxPerfFee;
+        IUniswapV2Router02(router).swapExactTokensForETH(toBnb, 0, rwTokenToWbnbRoute, address(this), block.timestamp);
 
         uint256 bnbBal = address(this).balance;
 
@@ -157,14 +178,14 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
 
     // Adds liquidity to AMM and gets more LP tokens.
     function addLiquidity() internal {
-        uint256 cakeHalf = IERC20(CAKE).balanceOf(address(this)) / 2;
+        uint256 rwTokenHalf = IERC20(rwToken).balanceOf(address(this)) / 2;
 
-        if (lpToken0 != CAKE) {
-            IUniswapV2Router02(router).swapExactTokensForTokens(cakeHalf, 0, cakeToLp0Route, address(this), block.timestamp);
+        if (lpToken0 != rwToken) {
+            IUniswapV2Router02(router).swapExactTokensForTokens(rwTokenHalf, 0, rwTokenToLp0Route, address(this), block.timestamp);
         }
 
-        if (lpToken1 != CAKE) {
-            IUniswapV2Router02(router).swapExactTokensForTokens(cakeHalf, 0, cakeToLp1Route, address(this), block.timestamp);
+        if (lpToken1 != rwToken) {
+            IUniswapV2Router02(router).swapExactTokensForTokens(rwTokenHalf, 0, rwTokenToLp1Route, address(this), block.timestamp);
         }
 
         IUniswapV2Router02(router).addLiquidity(
@@ -190,7 +211,7 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
     }
 
     function balanceOfMasterChef() external view override returns (uint256) {
-        return IERC20(questLp).balanceOf(MASTERCHEF);
+        return IERC20(questLp).balanceOf(masterchef);
     }
 
     function pause() public override onlyOperator {
@@ -204,7 +225,7 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
 
         _giveAllowances();
 
-        deposit();
+        // deposit();
     }
 
     function paused() public view override(IQuest, Pausable) returns (bool) {
@@ -212,10 +233,10 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
     }
 
     function _giveAllowances() internal {
-        IERC20(questLp).safeApprove(MASTERCHEF, type(uint256).max);
-        IERC20(CAKE).safeApprove(router, type(uint256).max);
+        IERC20(questLp).safeApprove(masterchef, type(uint256).max);
+        IERC20(rwToken).safeApprove(router, type(uint256).max);
 
-        // lp token 0 and 1 maybe cake so approve 0 is needed here
+        // lp token 0 and 1 maybe rwToken so approve 0 is needed here
         IERC20(lpToken0).safeApprove(router, 0);
         IERC20(lpToken0).safeApprove(router, type(uint256).max);
 
@@ -224,8 +245,8 @@ abstract contract QuestBase is Ownable, Pausable, PerfCollector, IQuest {
     }
 
     function _removeAllowances() internal {
-        IERC20(questLp).safeApprove(MASTERCHEF, 0);
-        IERC20(CAKE).safeApprove(router, 0);
+        IERC20(questLp).safeApprove(masterchef, 0);
+        IERC20(rwToken).safeApprove(router, 0);
         IERC20(lpToken0).safeApprove(router, 0);
         IERC20(lpToken1).safeApprove(router, 0);
     }

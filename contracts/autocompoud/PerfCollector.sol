@@ -2,10 +2,10 @@
 pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IPerfCollector.sol";
-import "./QuestBase.sol";
 
-abstract contract PerfCollector is QuestBase, IPerfCollector {
+abstract contract PerfCollector is Ownable, IPerfCollector {
     uint256 public constant override maxPerfFee = 10000;
     uint256 public override perfFee = 300; // 3%
     uint256 public constant maxTotalPerfFee = 1000; // 10%

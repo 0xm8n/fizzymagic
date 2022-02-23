@@ -26,10 +26,11 @@ contract QuestPcsLp is QuestBase {
         address _guild,
         address _guildReserve,
         address _executor,
+        address _operator,
         uint256 _pid,
         address[] memory _cakeToLp0Route,
         address[] memory _cakeToLp1Route
-    ) QuestBase( ROUTER, _guild, _guildReserve, _executor, MASTERCHEF, _pid, CAKE, _cakeToLp0Route, _cakeToLp1Route){}
+    ) QuestBase( ROUTER, _guild, _guildReserve, _executor, _operator, MASTERCHEF, IPcsMasterChef(MASTERCHEF).poolInfo(_pid).lpToken, _pid, CAKE, _cakeToLp0Route, _cakeToLp1Route){}
 
     /**
      * @dev Function to synchronize balances before new user deposit.

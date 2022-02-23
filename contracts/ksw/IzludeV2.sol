@@ -7,6 +7,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/IIzludeV2.sol";
+import "./interfaces/IFeeKafraV2.sol";
+import "./interfaces/IAllocKafraV2.sol";
+import "./interfaces/IByalan.sol";
+import "../utils/Math.sol";
 
 contract IzludeV2 is IIzludeV2, Ownable {
     using SafeERC20 for IERC20;
@@ -72,7 +76,7 @@ contract IzludeV2 is IIzludeV2, Ownable {
         if (feeKafra == address(0)) {
             return 0;
         }
-        return Math.min(IFeeKafra(feeKafra).calculateWithdrawFee(amount, user), _calculateMaxWithdrawFee(amount));
+        return Math.min(IFeeKafraV2(feeKafra).calculateWithdrawFee(amount, user), _calculateMaxWithdrawFee(amount));
     }
 
     function _calculateMaxWithdrawFee(uint256 amount) private pure returns (uint256) {
@@ -82,7 +86,7 @@ contract IzludeV2 is IIzludeV2, Ownable {
     function checkAllocation(uint256 amount, address user) private view {
         require(
             allocKafra == address(0) ||
-                IAllocKafra(allocKafra).canAllocate(amount, byalan.balanceOf(), byalan.balanceOfMasterChef(), user),
+                IAllocKafraV2(allocKafra).canAllocate(amount, byalan.balanceOf(), byalan.balanceOfMasterChef(), user),
             "capacity limit reached"
         );
     }
@@ -134,7 +138,7 @@ contract IzludeV2 is IIzludeV2, Ownable {
         if (fee > 0) {
             r -= fee;
             want.safeTransfer(address(feeKafra), fee);
-            IFeeKafra(feeKafra).distributeWithdrawFee(want, user);
+            IFeeKafraV2(feeKafra).distributeWithdrawFee(want, user);
         }
         want.safeTransfer(msg.sender, r);
         return r;

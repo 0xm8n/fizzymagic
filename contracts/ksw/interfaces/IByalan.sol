@@ -2,8 +2,9 @@
 
 pragma solidity ^0.8.9;
 
-import "./interfaces/IByalanIsland.sol";
-import "./interfaces/ISailor.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./IByalanIsland.sol";
+import "./ISailor.sol";
 
 interface IByalan is IByalanIsland, ISailor {
     function want() external view returns (address);

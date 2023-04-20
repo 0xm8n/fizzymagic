@@ -9,10 +9,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title Kswzy Magic
 
-contract KswzyMagicToken is Ownable, ERC20 {
+contract FizzyMagicToken is Ownable, ERC20 {
     uint256 public _maxSupply;
 
-    constructor(uint256 cap) ERC20("Kswzy Magic Token", "FIZ") {
+    constructor(uint256 cap) ERC20("Fizzy Magic Token", "FIZ") {
         require(cap > 0, "ERC20: cap is 0");
         _maxSupply = cap;
     }
